@@ -40,6 +40,7 @@ header{text-align:center;padding:26px 0 8px}
 .section-label{
   color:var(--faint);font-size:.75rem;font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;margin:30px 4px 10px;
+  display:flex;align-items:center;justify-content:space-between;
 }
 .mode-desc{color:var(--muted);font-size:.88rem;margin:-4px 4px 12px}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -56,6 +57,13 @@ header{text-align:center;padding:26px 0 8px}
   margin-top:12px;font-size:.78rem;color:var(--accent2);font-weight:600;
   display:flex;align-items:center;gap:5px;
 }
+.toggle{
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  color:var(--muted);font-size:.78rem;font-weight:600;letter-spacing:normal;
+  text-transform:none;
+}
+.toggle input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+.toggle .on{color:var(--accent)}
 .footer-note{margin-top:48px;text-align:center;color:var(--faint);font-size:.78rem}
 
 /* ---------- game shell ---------- */
@@ -70,6 +78,7 @@ header{text-align:center;padding:26px 0 8px}
 }
 .back-btn:hover{color:var(--text);border-color:var(--border2)}
 .mode-title{font-size:.85rem;color:var(--muted);font-weight:600;text-align:center}
+.mode-title .hard-tag{color:var(--red);font-weight:800}
 .scores{display:flex;gap:14px;font-size:.85rem;font-weight:700}
 .scores .streak{color:var(--accent)}
 .scores .hs{color:var(--muted)}
@@ -88,9 +97,9 @@ header{text-align:center;padding:26px 0 8px}
 .stint{
   display:flex;flex-direction:column;align-items:center;min-width:76px;
   background:var(--bg2);border:1px solid var(--border);border-radius:11px;
-  padding:9px 13px 8px;border-top:3px solid var(--tc,#888);
+  padding:9px 13px 8px;border-top:3px solid var(--tc,#888);justify-content:center;
 }
-.stint .abbr{font-weight:800;font-size:1.05rem;letter-spacing:.04em}
+.stint .abbr{font-weight:800;font-size:1.02rem;letter-spacing:.03em}
 .stint .yrs{color:var(--muted);font-size:.74rem;margin-top:1px}
 .arrow{align-self:center;color:var(--faint);font-size:1rem}
 
@@ -116,7 +125,6 @@ header{text-align:center;padding:26px 0 8px}
   background:var(--card2);border:1px solid var(--border2);border-radius:11px;
   max-height:228px;overflow-y:auto;box-shadow:0 -8px 28px rgba(0,0,0,.45);
 }
-.suggestions.below{bottom:auto;top:calc(100% + 6px);box-shadow:0 8px 28px rgba(0,0,0,.45)}
 .sug{padding:10px 15px;cursor:pointer;font-size:.94rem;display:flex;justify-content:space-between;gap:8px}
 .sug .p{color:var(--faint);font-size:.8rem}
 .sug:hover,.sug.hl{background:rgba(255,138,61,.13)}
@@ -128,21 +136,20 @@ header{text-align:center;padding:26px 0 8px}
 .slot{
   min-width:64px;height:44px;border-radius:10px;border:1.5px dashed var(--border2);
   display:flex;align-items:center;justify-content:center;color:var(--faint);
-  font-weight:800;font-size:.95rem;letter-spacing:.04em;
+  font-weight:800;font-size:.9rem;letter-spacing:.03em;padding:0 8px;
 }
 .slot.filled{border-style:solid;background:var(--bg2);color:var(--text);border-top:3px solid var(--tc,#888);cursor:pointer}
 .slot.filled:hover{border-color:var(--red)}
 .slot-num{font-size:.72rem;font-weight:600}
 .picker-label{color:var(--faint);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin:16px 2px 8px}
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:7px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:7px}
 .team-btn{
   background:var(--bg2);border:1px solid var(--border);color:var(--text);
-  border-radius:9px;padding:9px 2px;font-weight:800;font-size:.86rem;cursor:pointer;
-  font-family:inherit;letter-spacing:.03em;border-top:3px solid var(--tc,#666);
-  transition:.12s;
+  border-radius:9px;padding:9px 2px;font-weight:800;font-size:.8rem;cursor:pointer;
+  font-family:inherit;letter-spacing:.02em;border-top:3px solid var(--tc,#666);
+  transition:.12s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .team-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
-.team-btn:disabled{opacity:.35;cursor:default;transform:none}
 .path-actions{display:flex;gap:10px;margin-top:20px}
 .btn{
   flex:1;border:none;border-radius:11px;padding:13px;font-size:.95rem;font-weight:700;
@@ -183,8 +190,14 @@ header{text-align:center;padding:26px 0 8px}
       <div class="tagline">How well do you know NBA career paths?</div>
     </header>
 
-    <div class="section-label">Who Am I?</div>
-    <div class="mode-desc">You get the career team history — name the player. One miss ends your streak (you get one second chance per player).</div>
+    <div class="section-label">
+      <span>Who Am I?</span>
+      <label class="toggle" title="Hide the years on every career block. Careers that would be ambiguous without years (e.g. a lone Lakers block) are removed from the puzzle pool.">
+        <input type="checkbox" id="hardToggle">
+        <span id="hardLabel">Hard mode</span>
+      </label>
+    </div>
+    <div class="mode-desc" id="guessDesc">You get the career team history — name the player. One second chance per player.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('guess','active')">
         <h3>Active Players</h3>
@@ -193,13 +206,13 @@ header{text-align:center;padding:26px 0 8px}
       </button>
       <button class="mode-card" onclick="startGame('guess','alltime')">
         <h3>All-Time</h3>
-        <div class="sub">Legends &amp; greats from every era</div>
+        <div class="sub">Legends of every era — including today's</div>
         <div class="best">🔥 Best streak: <span data-best="guess_alltime">0</span></div>
       </button>
     </div>
 
-    <div class="section-label">Career Path</div>
-    <div class="mode-desc">You get the player — rebuild the teams they played for, in order. One wrong path ends the run.</div>
+    <div class="section-label"><span>Career Path</span></div>
+    <div class="mode-desc">You get the player — rebuild the teams they played for, in order. Team names match the player's era (SEA, not OKC, for Shawn Kemp). Only multi-team careers appear.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('path','active')">
         <h3>Active Players</h3>
@@ -208,12 +221,12 @@ header{text-align:center;padding:26px 0 8px}
       </button>
       <button class="mode-card" onclick="startGame('path','alltime')">
         <h3>All-Time</h3>
-        <div class="sub">Includes historical teams (Sonics, Bullets…)</div>
+        <div class="sub">Era-accurate teams (Sonics, Bullets…)</div>
         <div class="best">🔥 Best streak: <span data-best="path_alltime">0</span></div>
       </button>
     </div>
 
-    <div class="footer-note">Rosters current as of July 2026 · Built by Sheamus Carroll</div>
+    <div class="footer-note" id="footerNote">Built by Sheamus Carroll</div>
   </div>
 
   <!-- ============ GAME ============ -->
@@ -250,7 +263,7 @@ header{text-align:center;padding:26px 0 8px}
         <div class="player-name" id="pathName"></div>
         <div class="player-meta" id="pathMeta"></div>
         <div class="slots" id="slots"></div>
-        <div class="picker-label">Tap teams in order · tap a filled slot to remove it</div>
+        <div class="picker-label" id="pickerLabel">Tap teams in order · tap a filled slot to remove it</div>
         <div class="team-grid" id="teamGrid"></div>
         <div class="path-actions">
           <button class="btn btn-ghost" onclick="undoPick()">Undo</button>
@@ -282,9 +295,10 @@ header{text-align:center;padding:26px 0 8px}
 <script src="players.js"></script>
 <script>
 /* ================= state ================= */
+const CUR_YEAR = 2026;
 let mode = null;          // 'guess' | 'path'
 let pool = null;          // 'active' | 'alltime'
-let deck = [];            // shuffled indices into current pool
+let deck = [];            // shuffled indices into current round pool
 let deckPos = 0;
 let current = null;       // current player object
 let streak = 0;
@@ -293,6 +307,7 @@ let picks = [];           // career path picks (team codes)
 let answerPath = [];      // merged team codes for current player
 let roundOver = false;
 let sugIndex = -1;
+let hardMode = localStorage.getItem("jm_hard") === "1";
 
 const $ = id => document.getElementById(id);
 
@@ -301,51 +316,111 @@ const MODE_NAMES = {
   path_active:"Career Path · Active", path_alltime:"Career Path · All-Time"
 };
 
-function poolPlayers(){ return PLAYERS.filter(p => pool==='active' ? p.act===1 : p.act===0); }
-function bestKey(){ return `jm_best_${mode}_${pool}`; }
-function getBest(k){ return parseInt(localStorage.getItem(k)||"0",10); }
+/* ================= era-accurate franchise labels =================
+   Each stint stores the modern code; eraInfo() converts a code plus a
+   year range into what the franchise was actually called then.
+   KD's 2007–16 OKC block → "SEA/OKC"; Payton's 1990–2003 → "SEA".   */
+function segsFor(code){
+  const t = TEAMS[code];
+  const segs = [];
+  let lo = -Infinity;
+  (t.e || []).forEach(([lab, until, col]) => {
+    segs.push({lab, lo, hi: until, col: col || t.c});
+    lo = until;
+  });
+  segs.push({lab: code, lo, hi: Infinity, col: t.c});
+  return segs;
+}
+function eraInfo(code, from, to){
+  const et = to === 0 ? CUR_YEAR : to;
+  let inc = segsFor(code).filter(s => from < s.hi && et > s.lo);
+  if (!inc.length) inc = segsFor(code).filter(s => from >= s.lo && from < s.hi);
+  return {
+    label: inc.map(s => s.lab).join("/"),
+    color: inc.length ? inc[inc.length - 1].col : TEAMS[code].c
+  };
+}
+
+/* ================= pools & signatures ================= */
+function basePool(){
+  return PLAYERS.filter(p => pool === 'active' ? p.act === 1 : (p.act === 0 || GREATS.has(p.n)));
+}
+/* merged blocks: consecutive same-franchise stints collapsed */
+function mergedBlocks(p){
+  const out = [];
+  for (const s of p.s){
+    const last = out[out.length - 1];
+    if (last && last.code === s[0]) last.to = s[2];
+    else out.push({code: s[0], from: s[1], to: s[2]});
+  }
+  return out;
+}
+function mergedPath(p){ return mergedBlocks(p).map(b => b.code); }
+/* hard signature: era labels only (what the player actually sees in hard mode) */
+function sigHard(p){
+  return mergedBlocks(p).map(b => eraInfo(b.code, b.from, b.to).label).join(">");
+}
+/* easy signature: every stint with exact years */
+function sigEasy(p){
+  return p.s.map(s => `${eraInfo(s[0], s[1], s[2]).label}:${s[1]}-${s[2]}`).join(">");
+}
+/* pool a puzzle answer may be drawn from */
+function answerPool(){
+  let ps = basePool();
+  if (mode === 'path'){
+    ps = ps.filter(p => mergedPath(p).length >= 2);       // multi-team careers only
+  } else if (hardMode){
+    const counts = {};
+    ps.forEach(p => { const k = sigHard(p); counts[k] = (counts[k] || 0) + 1; });
+    ps = ps.filter(p => counts[sigHard(p)] === 1);        // no ambiguous careers
+  }
+  return ps;
+}
+
+function isHardGame(){ return mode === 'guess' && hardMode; }
+function bestKey(){ return `jm_best_${mode}_${pool}` + (isHardGame() ? "_hard" : ""); }
+function getBest(k){ return parseInt(localStorage.getItem(k) || "0", 10); }
 
 function refreshHomeBests(){
-  document.querySelectorAll("[data-best]").forEach(el=>{
-    el.textContent = getBest("jm_best_"+el.dataset.best);
+  document.querySelectorAll("[data-best]").forEach(el => {
+    const suffix = (hardMode && el.dataset.best.startsWith("guess")) ? "_hard" : "";
+    el.textContent = getBest("jm_best_" + el.dataset.best + suffix);
   });
 }
 
 function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
-/* merged path (consecutive duplicates collapsed) */
-function mergedPath(p){
-  const out = [];
-  for(const s of p.s) if(!out.length || out[out.length-1] !== s[0]) out.push(s[0]);
-  return out;
-}
-function yrs(s){
-  const a = String(s[1]);
-  const b = s[2] === 0 ? "now" : String(s[2]);
-  if(a === b) return a;
-  return a + "–" + (b==="now" ? "now" : b.slice(2));
+function yrsText(from, to){
+  const b = to === 0 ? "now" : String(to);
+  if (String(from) === b) return String(from);
+  return from + "–" + (b === "now" ? "now" : b.slice(2));
 }
 function careerSpan(p){
   const from = p.s[0][1];
-  const last = p.s[p.s.length-1][2];
-  return from + "–" + (last===0 ? "present" : last);
+  const last = p.s[p.s.length - 1][2];
+  return from + "–" + (last === 0 ? "present" : last);
+}
+function careerEnd(p){
+  const last = p.s[p.s.length - 1][2];
+  return last === 0 ? CUR_YEAR : last;
 }
 
 /* ================= navigation ================= */
 function startGame(m, po){
   mode = m; pool = po;
   streak = 0;
-  deck = shuffle(poolPlayers().map((_,i)=>i));
+  deck = shuffle(answerPool().slice());
   deckPos = 0;
   $("home").classList.add("hidden");
   $("game").classList.remove("hidden");
-  $("modeTitle").textContent = MODE_NAMES[`${mode}_${pool}`];
+  $("modeTitle").innerHTML = MODE_NAMES[`${mode}_${pool}`] +
+    (isHardGame() ? ' <span class="hard-tag">· HARD</span>' : "");
   $("best").textContent = getBest(bestKey());
   nextRound();
 }
@@ -358,9 +433,8 @@ function restart(){ startGame(mode, pool); }
 
 /* ================= round flow ================= */
 function nextRound(){
-  const players = poolPlayers();
-  if(deckPos >= deck.length){ deck = shuffle(deck); deckPos = 0; }
-  current = players[deck[deckPos++]];
+  if (deckPos >= deck.length){ shuffle(deck); deckPos = 0; }
+  current = deck[deckPos++];
   answerPath = mergedPath(current);
   roundOver = false;
   triesLeft = 2;
@@ -372,7 +446,7 @@ function nextRound(){
   $("streak").textContent = streak;
   $("gameCard").classList.remove("shake");
 
-  if(mode === "guess"){
+  if (mode === "guess"){
     $("guessView").classList.remove("hidden");
     $("pathView").classList.add("hidden");
     renderStints();
@@ -382,12 +456,12 @@ function nextRound(){
     const inp = $("guessInput");
     inp.value = ""; inp.disabled = false;
     hideSugs();
-    setTimeout(()=>inp.focus(), 60);
+    setTimeout(() => inp.focus(), 60);
   } else {
     $("pathView").classList.remove("hidden");
     $("guessView").classList.add("hidden");
     $("pathName").textContent = current.n;
-    $("pathMeta").textContent = `${current.p} · ${careerSpan(current)} · ${answerPath.length} team${answerPath.length>1?"s":""}`;
+    $("pathMeta").textContent = `${posName(current.p)} · ${careerSpan(current)} · ${answerPath.length} teams`;
     renderTeamGrid();
     renderSlots();
   }
@@ -397,65 +471,80 @@ function nextRound(){
 function renderStints(){
   const box = $("stints");
   box.innerHTML = "";
-  current.s.forEach((s,i)=>{
-    if(i>0){
+  /* hard mode: hide years and collapse repeat blocks (CHI,CHI → CHI) */
+  const items = isHardGame()
+    ? mergedBlocks(current)
+    : current.s.map(s => ({code: s[0], from: s[1], to: s[2]}));
+  items.forEach((b, i) => {
+    if (i > 0){
       const ar = document.createElement("div");
       ar.className = "arrow"; ar.textContent = "→";
       box.appendChild(ar);
     }
+    const info = eraInfo(b.code, b.from, b.to);
     const d = document.createElement("div");
     d.className = "stint";
-    d.style.setProperty("--tc", TEAMS[s[0]].c);
-    d.innerHTML = `<span class="abbr">${s[0]}</span><span class="yrs">${yrs(s)}</span>`;
+    d.style.setProperty("--tc", info.color);
+    d.innerHTML = `<span class="abbr">${info.label}</span>` +
+      (isHardGame() ? "" : `<span class="yrs">${yrsText(b.from, b.to)}</span>`);
     box.appendChild(d);
   });
 }
 function showHint(){
   $("hintBtn").classList.add("hidden");
   const t = $("hintText");
-  t.textContent = `${posName(current.p)} · debuted ${current.s[0][1]}`;
+  /* years are visible in easy mode, so debut year is only a hint in hard mode */
+  t.textContent = isHardGame()
+    ? `${posName(current.p)} · debuted ${current.s[0][1]}`
+    : posName(current.p);
   t.classList.remove("hidden");
 }
 function posName(p){
-  return {PG:"Point guard",SG:"Shooting guard",SF:"Small forward",PF:"Power forward",C:"Center"}[p]||p;
+  return {PG:"Point guard", SG:"Shooting guard", SF:"Small forward", PF:"Power forward", C:"Center"}[p] || p;
 }
 function norm(s){
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+}
+/* a guess is right if it names the player OR any player with the identical
+   career path — teams+exact years in easy mode, team sequence in hard mode */
+function guessMatches(guessed){
+  if (norm(guessed.n) === norm(current.n)) return true;
+  return isHardGame()
+    ? sigHard(guessed) === sigHard(current)
+    : sigEasy(guessed) === sigEasy(current);
 }
 
 const inp = document.getElementById("guessInput");
-inp.addEventListener("input", ()=>{ if(!roundOver) renderSugs(); });
-inp.addEventListener("keydown", e=>{
+inp.addEventListener("input", () => { if (!roundOver) renderSugs(); });
+inp.addEventListener("keydown", e => {
   const sugs = [...document.querySelectorAll(".sug")];
-  if(e.key==="ArrowDown"){ e.preventDefault(); sugIndex = Math.min(sugIndex+1, sugs.length-1); hl(sugs); }
-  else if(e.key==="ArrowUp"){ e.preventDefault(); sugIndex = Math.max(sugIndex-1, 0); hl(sugs); }
-  else if(e.key==="Enter"){
+  if (e.key === "ArrowDown"){ e.preventDefault(); sugIndex = Math.min(sugIndex + 1, sugs.length - 1); hl(sugs); }
+  else if (e.key === "ArrowUp"){ e.preventDefault(); sugIndex = Math.max(sugIndex - 1, 0); hl(sugs); }
+  else if (e.key === "Enter"){
     e.preventDefault();
-    if(sugs.length){
-      const pick = sugs[sugIndex>=0?sugIndex:0];
+    if (sugs.length){
+      const pick = sugs[sugIndex >= 0 ? sugIndex : 0];
       submitGuess(pick.dataset.name);
     } else {
-      const exact = poolPlayers().find(p=>norm(p.n)===norm(inp.value));
-      if(exact) submitGuess(exact.n);
+      const exact = basePool().find(p => norm(p.n) === norm(inp.value));
+      if (exact) submitGuess(exact.n);
     }
   }
-  else if(e.key==="Escape") hideSugs();
+  else if (e.key === "Escape") hideSugs();
 });
-function hl(sugs){ sugs.forEach((s,i)=>s.classList.toggle("hl", i===sugIndex)); }
+function hl(sugs){ sugs.forEach((s, i) => s.classList.toggle("hl", i === sugIndex)); }
 function renderSugs(){
   const q = norm(inp.value);
   const box = $("sugBox");
-  if(q.length < 2){ hideSugs(); return; }
-  const matches = poolPlayers()
-    .filter(p=>norm(p.n).includes(q))
-    .slice(0,8);
-  if(!matches.length){ hideSugs(); return; }
+  if (q.length < 2){ hideSugs(); return; }
+  const matches = basePool().filter(p => norm(p.n).includes(q)).slice(0, 8);
+  if (!matches.length){ hideSugs(); return; }
   box.innerHTML = "";
-  matches.forEach(p=>{
+  matches.forEach(p => {
     const d = document.createElement("div");
     d.className = "sug"; d.dataset.name = p.n;
     d.innerHTML = `<span>${p.n}</span><span class="p">${p.p}</span>`;
-    d.onmousedown = e=>{ e.preventDefault(); submitGuess(p.n); };
+    d.onmousedown = e => { e.preventDefault(); submitGuess(p.n); };
     box.appendChild(d);
   });
   sugIndex = -1;
@@ -464,21 +553,22 @@ function renderSugs(){
 function hideSugs(){ $("sugBox").classList.add("hidden"); sugIndex = -1; }
 
 function submitGuess(name){
-  if(roundOver) return;
+  if (roundOver) return;
   hideSugs();
   inp.value = "";
-  if(norm(name) === norm(current.n)){
-    correct();
+  const guessed = basePool().find(p => norm(p.n) === norm(name));
+  if (guessed && guessMatches(guessed)){
+    correct(guessed);
   } else {
     triesLeft--;
-    if(triesLeft > 0){
+    if (triesLeft > 0){
       $("feedback").textContent = `Not ${name}. One more shot…`;
       $("feedback").className = "feedback bad";
       $("tries").textContent = "1 guess left";
       $("gameCard").classList.remove("shake");
       void $("gameCard").offsetWidth;
       $("gameCard").classList.add("shake");
-      if($("hintText").classList.contains("hidden")) showHint();
+      if ($("hintText").classList.contains("hidden")) showHint();
     } else {
       gameOver();
     }
@@ -486,71 +576,80 @@ function submitGuess(name){
 }
 
 /* ================= CAREER PATH ================= */
+/* only franchises that existed during the player's career, named for the era */
 function renderTeamGrid(){
   const grid = $("teamGrid");
   grid.innerHTML = "";
-  const codes = Object.keys(TEAMS).filter(c => pool==="alltime" || !TEAMS[c].h);
-  codes.sort();
-  codes.forEach(c=>{
+  const from = current.s[0][1], to = careerEnd(current);
+  const codes = Object.keys(TEAMS).filter(c => TEAMS[c].f <= to);
+  const entries = codes.map(c => ({code: c, ...eraInfo(c, from, to)}))
+                       .sort((a, b) => a.label.localeCompare(b.label));
+  entries.forEach(t => {
     const b = document.createElement("button");
     b.className = "team-btn";
-    b.textContent = c;
-    b.title = TEAMS[c].name;
-    b.style.setProperty("--tc", TEAMS[c].c);
-    b.onclick = ()=>pickTeam(c);
+    b.textContent = t.label;
+    b.title = TEAMS[t.code].name;
+    b.style.setProperty("--tc", t.color);
+    b.onclick = () => pickTeam(t.code);
     grid.appendChild(b);
   });
 }
 function renderSlots(){
   const box = $("slots");
   box.innerHTML = "";
-  for(let i=0;i<answerPath.length;i++){
+  for (let i = 0; i < answerPath.length; i++){
     const d = document.createElement("div");
-    if(i < picks.length){
+    if (i < picks.length){
+      const info = eraInfo(picks[i], current.s[0][1], careerEnd(current));
       d.className = "slot filled";
-      d.style.setProperty("--tc", TEAMS[picks[i]].c);
-      d.textContent = picks[i];
+      d.style.setProperty("--tc", info.color);
+      d.textContent = info.label;
       d.title = "Remove";
-      d.onclick = ()=>{ if(!roundOver){ picks.splice(i,1); renderSlots(); } };
+      d.onclick = () => { if (!roundOver){ picks.splice(i, 1); renderSlots(); } };
     } else {
       d.className = "slot";
-      d.innerHTML = `<span class="slot-num">${i+1}</span>`;
+      d.innerHTML = `<span class="slot-num">${i + 1}</span>`;
     }
     box.appendChild(d);
   }
   $("submitPath").disabled = picks.length !== answerPath.length || roundOver;
 }
 function pickTeam(c){
-  if(roundOver || picks.length >= answerPath.length) return;
+  if (roundOver || picks.length >= answerPath.length) return;
   picks.push(c);
   renderSlots();
 }
 function undoPick(){
-  if(roundOver || !picks.length) return;
+  if (roundOver || !picks.length) return;
   picks.pop();
   renderSlots();
 }
 function submitPath(){
-  if(roundOver) return;
-  const ok = picks.length===answerPath.length && picks.every((c,i)=>c===answerPath[i]);
-  if(ok) correct(); else gameOver();
+  if (roundOver) return;
+  const ok = picks.length === answerPath.length && picks.every((c, i) => c === answerPath[i]);
+  if (ok) correct(); else gameOver();
 }
 
 /* ================= results ================= */
-function correct(){
+function correct(guessed){
   roundOver = true;
   streak++;
   $("streak").textContent = streak;
   const b = getBest(bestKey());
-  if(streak > b){ localStorage.setItem(bestKey(), streak); $("best").textContent = streak; }
-  $("feedback").textContent = mode==="guess" ? `✔ ${current.n}!` : "✔ Perfect path!";
+  if (streak > b){ localStorage.setItem(bestKey(), streak); $("best").textContent = streak; }
+  let msg = mode === "guess" ? `✔ ${current.n}!` : "✔ Perfect path!";
+  if (guessed && guessed.n !== current.n) msg = `✔ Identical career path — it was ${current.n}, but ${guessed.n} counts!`;
+  $("feedback").textContent = msg;
   $("feedback").className = "feedback good";
-  if(mode==="guess") $("guessInput").disabled = true;
-  setTimeout(nextRound, 900);
+  if (mode === "guess") $("guessInput").disabled = true;
+  setTimeout(nextRound, guessed && guessed.n !== current.n ? 1800 : 900);
 }
 
 function pathString(p){
-  return p.s.map(s=>`${TEAMS[s[0]].name} (${yrs(s)})`).join("  →  ");
+  return p.s.map(s => {
+    const info = eraInfo(s[0], s[1], s[2]);
+    return `${TEAMS[s[0]].name}${info.label !== s[0] ? " (" + info.label + ")" : ""} ${yrsText(s[1], s[2])}`;
+  }).join("  →  ");
 }
 
 function gameOver(){
@@ -566,14 +665,29 @@ function gameOver(){
   $("revealPath").innerHTML = pathString(current);
   const b = getBest(bestKey());
   const isNew = streak > b;
-  if(isNew) localStorage.setItem(bestKey(), streak);
+  if (isNew) localStorage.setItem(bestKey(), streak);
   $("finalStreak").textContent = streak;
   $("finalBest").textContent = Math.max(streak, b);
-  $("newBest").classList.toggle("hidden", !isNew || streak===0);
+  $("newBest").classList.toggle("hidden", !isNew || streak === 0);
   $("gameOver").classList.remove("hidden");
 }
 
 /* ================= init ================= */
+const hardToggle = $("hardToggle");
+hardToggle.checked = hardMode;
+$("hardLabel").classList.toggle("on", hardMode);
+hardToggle.addEventListener("change", () => {
+  hardMode = hardToggle.checked;
+  localStorage.setItem("jm_hard", hardMode ? "1" : "0");
+  $("hardLabel").classList.toggle("on", hardMode);
+  $("guessDesc").textContent = hardMode
+    ? "Hard mode: no years shown, and any career you could confuse with another player's is removed. Name the player."
+    : "You get the career team history — name the player. One second chance per player.";
+  refreshHomeBests();
+});
+if (hardMode) $("guessDesc").textContent =
+  "Hard mode: no years shown, and any career you could confuse with another player's is removed. Name the player.";
+$("footerNote").textContent = `Rosters current as of ${DATA_UPDATED} · Built by Sheamus Carroll`;
 refreshHomeBests();
 </script>
 </body>

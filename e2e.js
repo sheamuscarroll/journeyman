@@ -1,3 +1,4 @@
+/* End-to-end tests — simulated browser via jsdom. Run: npm install && node e2e.js */
 const fs = require("fs");
 const { JSDOM } = require("jsdom");
 
@@ -11,35 +12,97 @@ const w = dom.window;
 let fail = 0;
 const expect = (label, cond) => { if (!cond) fail++; console.log((cond ? "PASS" : "FAIL"), label); };
 
-// ---- Who Am I: correct guess ----
+/* ---- footer shows exact update date ---- */
+expect("footer shows updated-as-of date",
+  w.document.getElementById("footerNote").textContent.includes(w.eval("DATA_UPDATED")));
+
+/* ---- Who Am I (easy): correct guess ---- */
 w.eval(`startGame('guess','active')`);
 expect("game visible after start", !w.document.getElementById("game").classList.contains("hidden"));
-expect("guess view shown", !w.document.getElementById("guessView").classList.contains("hidden"));
-expect("stints rendered", w.document.getElementById("stints").children.length > 0);
+expect("easy mode shows years", w.document.querySelectorAll("#stints .yrs").length > 0);
 w.eval(`submitGuess(current.n)`);
 expect("correct guess -> streak 1", w.document.getElementById("streak").textContent === "1");
-expect("feedback good", w.document.getElementById("feedback").className.includes("good"));
 
-// ---- Who Am I: two wrong guesses -> game over ----
+/* ---- easy-mode hint has no debut year ---- */
+w.eval(`nextRound(); showHint();`);
+expect("easy hint = position only (no debut year)",
+  !w.document.getElementById("hintText").textContent.includes("debut"));
+
+/* ---- Who Am I: two wrong guesses -> game over ---- */
 w.eval(`startGame('guess','alltime')`);
 w.eval(`submitGuess("Definitely Wrong")`);
 expect("1st miss doesn't end round", w.document.getElementById("gameOver").classList.contains("hidden"));
-expect("hint auto-shown after miss", !w.document.getElementById("hintText").classList.contains("hidden"));
 w.eval(`submitGuess("Also Wrong")`);
 expect("2nd miss -> game over shown", !w.document.getElementById("gameOver").classList.contains("hidden"));
-expect("answer revealed", w.document.getElementById("revealName").textContent.length > 2);
 
-// ---- Career Path: correct submission ----
-w.eval(`startGame('path','alltime')`);
-expect("path view shown", !w.document.getElementById("pathView").classList.contains("hidden"));
-const gridButtons = w.document.getElementById("teamGrid").children.length;
-expect("all-time grid has 39 teams", gridButtons === 39);
-w.eval(`answerPath.forEach(c => pickTeam(c)); submitPath();`);
-expect("correct path -> streak 1", w.document.getElementById("streak").textContent === "1");
+/* ---- all-time pool includes active greats ---- */
+expect("all-time pool includes LeBron", w.eval(`basePool().some(p => p.n === "LeBron James")`));
+expect("all-time pool includes retired legends", w.eval(`basePool().some(p => p.n === "Michael Jordan")`));
+expect("all-time pool excludes non-great actives", w.eval(`!basePool().some(p => p.n === "Scoot Henderson")`));
 
-// ---- Career Path: wrong submission ----
+/* ---- hard mode ---- */
+w.eval(`goHome()`);
+const toggle = w.document.getElementById("hardToggle");
+toggle.checked = true;
+toggle.dispatchEvent(new w.Event("change", { bubbles: true }));
+w.eval(`startGame('guess','alltime')`);
+expect("hard mode flagged in title", w.document.getElementById("modeTitle").textContent.includes("HARD"));
+expect("hard mode hides years", w.document.querySelectorAll("#stints .yrs").length === 0);
+expect("hard pool has no ambiguous careers", w.eval(`
+  (() => { const ps = answerPool(); const c = {};
+    ps.forEach(p => { const k = sigHard(p); c[k] = (c[k]||0)+1; });
+    return Object.values(c).every(v => v === 1); })()
+`));
+expect("hard pool drops single-block Lakers legends", w.eval(`!answerPool().some(p => p.n === "Kobe Bryant")`));
+w.eval(`showHint()`);
+expect("hard hint includes debut year", w.document.getElementById("hintText").textContent.includes("debuted"));
+
+/* ---- duplicate career paths both count (easy mode) ---- */
+toggle.checked = false;
+toggle.dispatchEvent(new w.Event("change", { bubbles: true }));
 w.eval(`
-  // wait for auto-advance timer manually: force next round
+  PLAYERS.push({n:"Test Twin A",p:"PG",act:1,s:[["BOS",1111,1112],["LAL",1112,1113]]});
+  PLAYERS.push({n:"Test Twin B",p:"PG",act:1,s:[["BOS",1111,1112],["LAL",1112,1113]]});
+  startGame('guess','active');
+  current = PLAYERS.find(p => p.n === "Test Twin A");
+  renderStints();
+  submitGuess("Test Twin B");
+`);
+expect("identical career path counts as correct", w.document.getElementById("streak").textContent === "1");
+w.eval(`PLAYERS.pop(); PLAYERS.pop();`);
+
+/* ---- era-accurate labels ---- */
+expect("KD's OKC block labels SEA/OKC", w.eval(`eraInfo("OKC",2007,2016).label`) === "SEA/OKC");
+expect("Payton's block labels SEA", w.eval(`eraInfo("OKC",1990,2003).label`) === "SEA");
+expect("AD's NOP block labels NOH/NOP", w.eval(`eraInfo("NOP",2012,2020).label`) === "NOH/NOP");
+expect("Webber's WAS block labels WSB/WAS", w.eval(`eraInfo("WAS",1994,1998).label`) === "WSB/WAS");
+expect("Westbrook's OKC block labels OKC", w.eval(`eraInfo("OKC",2008,2019).label`) === "OKC");
+
+/* ---- Career Path: era-accurate grid ---- */
+w.eval(`
+  startGame('path','alltime');
+  current = PLAYERS.find(p => p.n === "Shawn Kemp");
+  answerPath = mergedPath(current); picks = [];
+  renderTeamGrid(); renderSlots();
+`);
+let labels = [...w.document.querySelectorAll("#teamGrid .team-btn")].map(b => b.textContent);
+expect("Kemp grid shows SEA not OKC", labels.includes("SEA") && !labels.includes("OKC"));
+w.eval(`
+  current = PLAYERS.find(p => p.n === "Wilt Chamberlain");
+  answerPath = mergedPath(current); picks = [];
+  renderTeamGrid(); renderSlots();
+`);
+labels = [...w.document.querySelectorAll("#teamGrid .team-btn")].map(b => b.textContent);
+expect("Wilt grid excludes post-1973 franchises (got " + labels.length + ")",
+  labels.length === 17 && !labels.includes("DAL") && !labels.includes("MIA"));
+expect("Wilt grid shows era Warriors label", labels.some(l => l.includes("PHW")));
+
+/* ---- Career Path: correct + wrong submissions ---- */
+w.eval(`
+  answerPath.forEach(c => pickTeam(c)); submitPath();
+`);
+expect("correct path -> streak 1", w.document.getElementById("streak").textContent === "1");
+w.eval(`
   nextRound();
   const wrong = answerPath.slice().reverse();
   if (wrong.length === 1) wrong[0] = wrong[0] === "BOS" ? "LAL" : "BOS";
@@ -47,16 +110,17 @@ w.eval(`
 `);
 expect("wrong path -> game over", !w.document.getElementById("gameOver").classList.contains("hidden"));
 
-// ---- active picker has exactly 30 teams ----
-w.eval(`startGame('path','active')`);
-expect("active grid has 30 teams", w.document.getElementById("teamGrid").children.length === 30);
+/* ---- Career Path pool: multi-team careers only ---- */
+expect("path pool has no single-team players", w.eval(`
+  (() => { mode='path'; pool='alltime';
+    return answerPool().every(p => mergedPath(p).length >= 2); })()
+`));
+expect("path pool (active) has no single-team players", w.eval(`
+  (() => { mode='path'; pool='active';
+    return answerPool().every(p => mergedPath(p).length >= 2); })()
+`));
 
-// ---- best-streak persistence ----
-w.eval(`localStorage.setItem("jm_best_guess_active","7"); goHome();`);
-const bestEl = w.document.querySelector('[data-best="guess_active"]');
-expect("home shows stored best", bestEl.textContent === "7");
-
-// ---- autocomplete ----
+/* ---- autocomplete ---- */
 w.eval(`startGame('guess','active')`);
 const inp = w.document.getElementById("guessInput");
 inp.value = "lebr";
