@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journeyman — NBA Career Guessing Game</title>
+<meta name="description" content="Journeyman: guess NBA players from their career team history, or rebuild a player's career path team by team. Active and all-time modes. How long can your streak go?">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#12181f; --card:#161d26; --card2:#1c2530;
+  --border:#242e3a; --border2:#33404f;
+  --text:#e8edf3; --muted:#8b98a8; --faint:#5c6875;
+  --accent:#ff8a3d; --accent2:#ffb07a; --green:#3ecf8e; --red:#ff5c69;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(1200px 500px at 50% -10%, rgba(255,138,61,.07), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  min-height:100vh; line-height:1.5;
+}
+.wrap{max-width:680px;margin:0 auto;padding:24px 18px 64px}
+
+/* ---------- header ---------- */
+header{text-align:center;padding:26px 0 8px}
+.logo{
+  font-size:2.35rem;font-weight:800;letter-spacing:.06em;
+  background:linear-gradient(100deg,var(--accent) 20%,var(--accent2) 80%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-transform:uppercase;
+}
+.logo .ball{font-size:1.6rem;vertical-align:.2em}
+.tagline{color:var(--muted);font-size:.95rem;margin-top:2px}
+
+/* ---------- home ---------- */
+.section-label{
+  color:var(--faint);font-size:.75rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;margin:30px 4px 10px;
+}
+.mode-desc{color:var(--muted);font-size:.88rem;margin:-4px 4px 12px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.cards{grid-template-columns:1fr}}
+.mode-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 18px 15px;cursor:pointer;text-align:left;color:var(--text);
+  font-family:inherit;transition:transform .15s,border-color .15s,background .15s;
+}
+.mode-card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--card2)}
+.mode-card h3{font-size:1.05rem;font-weight:700}
+.mode-card .sub{color:var(--muted);font-size:.82rem;margin-top:3px}
+.mode-card .best{
+  margin-top:12px;font-size:.78rem;color:var(--accent2);font-weight:600;
+  display:flex;align-items:center;gap:5px;
+}
+.footer-note{margin-top:48px;text-align:center;color:var(--faint);font-size:.78rem}
+
+/* ---------- game shell ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;gap:10px;
+}
+.back-btn{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:9px;padding:7px 13px;cursor:pointer;font-family:inherit;
+  font-size:.85rem;transition:.15s;
+}
+.back-btn:hover{color:var(--text);border-color:var(--border2)}
+.mode-title{font-size:.85rem;color:var(--muted);font-weight:600;text-align:center}
+.scores{display:flex;gap:14px;font-size:.85rem;font-weight:700}
+.scores .streak{color:var(--accent)}
+.scores .hs{color:var(--muted)}
+
+.game-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:26px 22px;animation:fadeIn .25s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.shake{animation:shake .4s ease}
+.prompt-label{color:var(--faint);font-size:.75rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:14px;text-align:center}
+
+/* stint chips (who am i) */
+.stints{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:6px}
+.stint{
+  display:flex;flex-direction:column;align-items:center;min-width:76px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:11px;
+  padding:9px 13px 8px;border-top:3px solid var(--tc,#888);
+}
+.stint .abbr{font-weight:800;font-size:1.05rem;letter-spacing:.04em}
+.stint .yrs{color:var(--muted);font-size:.74rem;margin-top:1px}
+.arrow{align-self:center;color:var(--faint);font-size:1rem}
+
+.hint-row{text-align:center;margin-top:14px;min-height:24px}
+.hint-btn{
+  background:none;border:none;color:var(--faint);cursor:pointer;font-family:inherit;
+  font-size:.82rem;text-decoration:underline dotted;text-underline-offset:3px;
+}
+.hint-btn:hover{color:var(--muted)}
+.hint-text{color:var(--accent2);font-size:.86rem;font-weight:600}
+.tries{color:var(--faint);font-size:.78rem;text-align:center;margin-top:8px}
+
+/* guess input */
+.guess-area{position:relative;margin-top:18px}
+.guess-input{
+  width:100%;background:var(--bg2);border:1.5px solid var(--border2);color:var(--text);
+  border-radius:11px;padding:13px 15px;font-size:1rem;font-family:inherit;outline:none;
+  transition:border-color .15s;
+}
+.guess-input:focus{border-color:var(--accent)}
+.suggestions{
+  position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:10;
+  background:var(--card2);border:1px solid var(--border2);border-radius:11px;
+  max-height:228px;overflow-y:auto;box-shadow:0 -8px 28px rgba(0,0,0,.45);
+}
+.suggestions.below{bottom:auto;top:calc(100% + 6px);box-shadow:0 8px 28px rgba(0,0,0,.45)}
+.sug{padding:10px 15px;cursor:pointer;font-size:.94rem;display:flex;justify-content:space-between;gap:8px}
+.sug .p{color:var(--faint);font-size:.8rem}
+.sug:hover,.sug.hl{background:rgba(255,138,61,.13)}
+
+/* career path */
+.player-name{font-size:1.7rem;font-weight:800;text-align:center;letter-spacing:.01em}
+.player-meta{color:var(--muted);text-align:center;font-size:.88rem;margin-top:3px;margin-bottom:20px}
+.slots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;min-height:46px}
+.slot{
+  min-width:64px;height:44px;border-radius:10px;border:1.5px dashed var(--border2);
+  display:flex;align-items:center;justify-content:center;color:var(--faint);
+  font-weight:800;font-size:.95rem;letter-spacing:.04em;
+}
+.slot.filled{border-style:solid;background:var(--bg2);color:var(--text);border-top:3px solid var(--tc,#888);cursor:pointer}
+.slot.filled:hover{border-color:var(--red)}
+.slot-num{font-size:.72rem;font-weight:600}
+.picker-label{color:var(--faint);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin:16px 2px 8px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:7px}
+.team-btn{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  border-radius:9px;padding:9px 2px;font-weight:800;font-size:.86rem;cursor:pointer;
+  font-family:inherit;letter-spacing:.03em;border-top:3px solid var(--tc,#666);
+  transition:.12s;
+}
+.team-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.team-btn:disabled{opacity:.35;cursor:default;transform:none}
+.path-actions{display:flex;gap:10px;margin-top:20px}
+.btn{
+  flex:1;border:none;border-radius:11px;padding:13px;font-size:.95rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.15s;
+}
+.btn-primary{background:var(--accent);color:#1a0d02}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{background:var(--border2);color:var(--faint);cursor:default}
+.btn-ghost{background:none;border:1px solid var(--border2);color:var(--muted)}
+.btn-ghost:hover{color:var(--text)}
+
+/* feedback / game over */
+.feedback{
+  text-align:center;padding:10px 0 2px;font-weight:700;font-size:1.05rem;min-height:34px;
+}
+.feedback.good{color:var(--green)}
+.feedback.bad{color:var(--red)}
+.reveal{
+  background:var(--bg2);border:1px solid var(--border);border-radius:11px;
+  padding:16px;text-align:center;margin-top:16px;
+}
+.reveal .who{font-size:1.25rem;font-weight:800}
+.reveal .path{color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.7}
+.gameover-stats{display:flex;justify-content:center;gap:34px;margin:20px 0 4px;text-align:center}
+.gameover-stats .num{font-size:2rem;font-weight:800;color:var(--accent)}
+.gameover-stats .lbl{color:var(--faint);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase}
+.newbest{color:var(--green);font-weight:700;text-align:center;margin-top:6px;font-size:.9rem}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HOME ============ -->
+  <div id="home">
+    <header>
+      <div class="logo"><span class="ball">🏀</span> Journeyman</div>
+      <div class="tagline">How well do you know NBA career paths?</div>
+    </header>
+
+    <div class="section-label">Who Am I?</div>
+    <div class="mode-desc">You get the career team history — name the player. One miss ends your streak (you get one second chance per player).</div>
+    <div class="cards">
+      <button class="mode-card" onclick="startGame('guess','active')">
+        <h3>Active Players</h3>
+        <div class="sub">Everyone currently in the league</div>
+        <div class="best">🔥 Best streak: <span data-best="guess_active">0</span></div>
+      </button>
+      <button class="mode-card" onclick="startGame('guess','alltime')">
+        <h3>All-Time</h3>
+        <div class="sub">Legends &amp; greats from every era</div>
+        <div class="best">🔥 Best streak: <span data-best="guess_alltime">0</span></div>
+      </button>
+    </div>
+
+    <div class="section-label">Career Path</div>
+    <div class="mode-desc">You get the player — rebuild the teams they played for, in order. One wrong path ends the run.</div>
+    <div class="cards">
+      <button class="mode-card" onclick="startGame('path','active')">
+        <h3>Active Players</h3>
+        <div class="sub">Current players, current rosters</div>
+        <div class="best">🔥 Best streak: <span data-best="path_active">0</span></div>
+      </button>
+      <button class="mode-card" onclick="startGame('path','alltime')">
+        <h3>All-Time</h3>
+        <div class="sub">Includes historical teams (Sonics, Bullets…)</div>
+        <div class="best">🔥 Best streak: <span data-best="path_alltime">0</span></div>
+      </button>
+    </div>
+
+    <div class="footer-note">Rosters current as of July 2026 · Built by Sheamus Carroll</div>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div id="game" class="hidden">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← Menu</button>
+      <div class="mode-title" id="modeTitle"></div>
+      <div class="scores">
+        <span class="streak">🔥 <span id="streak">0</span></span>
+        <span class="hs">Best <span id="best">0</span></span>
+      </div>
+    </div>
+
+    <div class="game-card" id="gameCard">
+      <!-- WHO AM I -->
+      <div id="guessView" class="hidden">
+        <div class="prompt-label">This player's career path…</div>
+        <div class="stints" id="stints"></div>
+        <div class="hint-row" id="hintRow">
+          <button class="hint-btn" id="hintBtn" onclick="showHint()">Need a hint?</button>
+          <span class="hint-text hidden" id="hintText"></span>
+        </div>
+        <div class="guess-area">
+          <input class="guess-input" id="guessInput" type="text" autocomplete="off"
+                 spellcheck="false" placeholder="Type a player's name…">
+          <div class="suggestions hidden" id="sugBox"></div>
+        </div>
+        <div class="tries" id="tries"></div>
+      </div>
+
+      <!-- CAREER PATH -->
+      <div id="pathView" class="hidden">
+        <div class="prompt-label">Rebuild the career path of…</div>
+        <div class="player-name" id="pathName"></div>
+        <div class="player-meta" id="pathMeta"></div>
+        <div class="slots" id="slots"></div>
+        <div class="picker-label">Tap teams in order · tap a filled slot to remove it</div>
+        <div class="team-grid" id="teamGrid"></div>
+        <div class="path-actions">
+          <button class="btn btn-ghost" onclick="undoPick()">Undo</button>
+          <button class="btn btn-primary" id="submitPath" onclick="submitPath()" disabled>Submit</button>
+        </div>
+      </div>
+
+      <!-- feedback + game over -->
+      <div class="feedback" id="feedback"></div>
+      <div id="gameOver" class="hidden">
+        <div class="reveal">
+          <div class="who" id="revealName"></div>
+          <div class="path" id="revealPath"></div>
+        </div>
+        <div class="gameover-stats">
+          <div><div class="num" id="finalStreak">0</div><div class="lbl">Streak</div></div>
+          <div><div class="num" id="finalBest">0</div><div class="lbl">Best</div></div>
+        </div>
+        <div class="newbest hidden" id="newBest">🎉 New best streak!</div>
+        <div class="path-actions">
+          <button class="btn btn-ghost" onclick="goHome()">Menu</button>
+          <button class="btn btn-primary" onclick="restart()">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="players.js"></script>
+<script>
+/* ================= state ================= */
+let mode = null;          // 'guess' | 'path'
+let pool = null;          // 'active' | 'alltime'
+let deck = [];            // shuffled indices into current pool
+let deckPos = 0;
+let current = null;       // current player object
+let streak = 0;
+let triesLeft = 2;        // who-am-i guesses per player
+let picks = [];           // career path picks (team codes)
+let answerPath = [];      // merged team codes for current player
+let roundOver = false;
+let sugIndex = -1;
+
+const $ = id => document.getElementById(id);
+
+const MODE_NAMES = {
+  guess_active:"Who Am I? · Active", guess_alltime:"Who Am I? · All-Time",
+  path_active:"Career Path · Active", path_alltime:"Career Path · All-Time"
+};
+
+function poolPlayers(){ return PLAYERS.filter(p => pool==='active' ? p.act===1 : p.act===0); }
+function bestKey(){ return `jm_best_${mode}_${pool}`; }
+function getBest(k){ return parseInt(localStorage.getItem(k)||"0",10); }
+
+function refreshHomeBests(){
+  document.querySelectorAll("[data-best]").forEach(el=>{
+    el.textContent = getBest("jm_best_"+el.dataset.best);
+  });
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* merged path (consecutive duplicates collapsed) */
+function mergedPath(p){
+  const out = [];
+  for(const s of p.s) if(!out.length || out[out.length-1] !== s[0]) out.push(s[0]);
+  return out;
+}
+function yrs(s){
+  const a = String(s[1]);
+  const b = s[2] === 0 ? "now" : String(s[2]);
+  if(a === b) return a;
+  return a + "–" + (b==="now" ? "now" : b.slice(2));
+}
+function careerSpan(p){
+  const from = p.s[0][1];
+  const last = p.s[p.s.length-1][2];
+  return from + "–" + (last===0 ? "present" : last);
+}
+
+/* ================= navigation ================= */
+function startGame(m, po){
+  mode = m; pool = po;
+  streak = 0;
+  deck = shuffle(poolPlayers().map((_,i)=>i));
+  deckPos = 0;
+  $("home").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  $("modeTitle").textContent = MODE_NAMES[`${mode}_${pool}`];
+  $("best").textContent = getBest(bestKey());
+  nextRound();
+}
+function goHome(){
+  $("game").classList.add("hidden");
+  $("home").classList.remove("hidden");
+  refreshHomeBests();
+}
+function restart(){ startGame(mode, pool); }
+
+/* ================= round flow ================= */
+function nextRound(){
+  const players = poolPlayers();
+  if(deckPos >= deck.length){ deck = shuffle(deck); deckPos = 0; }
+  current = players[deck[deckPos++]];
+  answerPath = mergedPath(current);
+  roundOver = false;
+  triesLeft = 2;
+  picks = [];
+
+  $("feedback").textContent = "";
+  $("feedback").className = "feedback";
+  $("gameOver").classList.add("hidden");
+  $("streak").textContent = streak;
+  $("gameCard").classList.remove("shake");
+
+  if(mode === "guess"){
+    $("guessView").classList.remove("hidden");
+    $("pathView").classList.add("hidden");
+    renderStints();
+    $("hintBtn").classList.remove("hidden");
+    $("hintText").classList.add("hidden");
+    $("tries").textContent = "";
+    const inp = $("guessInput");
+    inp.value = ""; inp.disabled = false;
+    hideSugs();
+    setTimeout(()=>inp.focus(), 60);
+  } else {
+    $("pathView").classList.remove("hidden");
+    $("guessView").classList.add("hidden");
+    $("pathName").textContent = current.n;
+    $("pathMeta").textContent = `${current.p} · ${careerSpan(current)} · ${answerPath.length} team${answerPath.length>1?"s":""}`;
+    renderTeamGrid();
+    renderSlots();
+  }
+}
+
+/* ================= WHO AM I ================= */
+function renderStints(){
+  const box = $("stints");
+  box.innerHTML = "";
+  current.s.forEach((s,i)=>{
+    if(i>0){
+      const ar = document.createElement("div");
+      ar.className = "arrow"; ar.textContent = "→";
+      box.appendChild(ar);
+    }
+    const d = document.createElement("div");
+    d.className = "stint";
+    d.style.setProperty("--tc", TEAMS[s[0]].c);
+    d.innerHTML = `<span class="abbr">${s[0]}</span><span class="yrs">${yrs(s)}</span>`;
+    box.appendChild(d);
+  });
+}
+function showHint(){
+  $("hintBtn").classList.add("hidden");
+  const t = $("hintText");
+  t.textContent = `${posName(current.p)} · debuted ${current.s[0][1]}`;
+  t.classList.remove("hidden");
+}
+function posName(p){
+  return {PG:"Point guard",SG:"Shooting guard",SF:"Small forward",PF:"Power forward",C:"Center"}[p]||p;
+}
+function norm(s){
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();
+}
+
+const inp = document.getElementById("guessInput");
+inp.addEventListener("input", ()=>{ if(!roundOver) renderSugs(); });
+inp.addEventListener("keydown", e=>{
+  const sugs = [...document.querySelectorAll(".sug")];
+  if(e.key==="ArrowDown"){ e.preventDefault(); sugIndex = Math.min(sugIndex+1, sugs.length-1); hl(sugs); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); sugIndex = Math.max(sugIndex-1, 0); hl(sugs); }
+  else if(e.key==="Enter"){
+    e.preventDefault();
+    if(sugs.length){
+      const pick = sugs[sugIndex>=0?sugIndex:0];
+      submitGuess(pick.dataset.name);
+    } else {
+      const exact = poolPlayers().find(p=>norm(p.n)===norm(inp.value));
+      if(exact) submitGuess(exact.n);
+    }
+  }
+  else if(e.key==="Escape") hideSugs();
+});
+function hl(sugs){ sugs.forEach((s,i)=>s.classList.toggle("hl", i===sugIndex)); }
+function renderSugs(){
+  const q = norm(inp.value);
+  const box = $("sugBox");
+  if(q.length < 2){ hideSugs(); return; }
+  const matches = poolPlayers()
+    .filter(p=>norm(p.n).includes(q))
+    .slice(0,8);
+  if(!matches.length){ hideSugs(); return; }
+  box.innerHTML = "";
+  matches.forEach(p=>{
+    const d = document.createElement("div");
+    d.className = "sug"; d.dataset.name = p.n;
+    d.innerHTML = `<span>${p.n}</span><span class="p">${p.p}</span>`;
+    d.onmousedown = e=>{ e.preventDefault(); submitGuess(p.n); };
+    box.appendChild(d);
+  });
+  sugIndex = -1;
+  box.classList.remove("hidden");
+}
+function hideSugs(){ $("sugBox").classList.add("hidden"); sugIndex = -1; }
+
+function submitGuess(name){
+  if(roundOver) return;
+  hideSugs();
+  inp.value = "";
+  if(norm(name) === norm(current.n)){
+    correct();
+  } else {
+    triesLeft--;
+    if(triesLeft > 0){
+      $("feedback").textContent = `Not ${name}. One more shot…`;
+      $("feedback").className = "feedback bad";
+      $("tries").textContent = "1 guess left";
+      $("gameCard").classList.remove("shake");
+      void $("gameCard").offsetWidth;
+      $("gameCard").classList.add("shake");
+      if($("hintText").classList.contains("hidden")) showHint();
+    } else {
+      gameOver();
+    }
+  }
+}
+
+/* ================= CAREER PATH ================= */
+function renderTeamGrid(){
+  const grid = $("teamGrid");
+  grid.innerHTML = "";
+  const codes = Object.keys(TEAMS).filter(c => pool==="alltime" || !TEAMS[c].h);
+  codes.sort();
+  codes.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "team-btn";
+    b.textContent = c;
+    b.title = TEAMS[c].name;
+    b.style.setProperty("--tc", TEAMS[c].c);
+    b.onclick = ()=>pickTeam(c);
+    grid.appendChild(b);
+  });
+}
+function renderSlots(){
+  const box = $("slots");
+  box.innerHTML = "";
+  for(let i=0;i<answerPath.length;i++){
+    const d = document.createElement("div");
+    if(i < picks.length){
+      d.className = "slot filled";
+      d.style.setProperty("--tc", TEAMS[picks[i]].c);
+      d.textContent = picks[i];
+      d.title = "Remove";
+      d.onclick = ()=>{ if(!roundOver){ picks.splice(i,1); renderSlots(); } };
+    } else {
+      d.className = "slot";
+      d.innerHTML = `<span class="slot-num">${i+1}</span>`;
+    }
+    box.appendChild(d);
+  }
+  $("submitPath").disabled = picks.length !== answerPath.length || roundOver;
+}
+function pickTeam(c){
+  if(roundOver || picks.length >= answerPath.length) return;
+  picks.push(c);
+  renderSlots();
+}
+function undoPick(){
+  if(roundOver || !picks.length) return;
+  picks.pop();
+  renderSlots();
+}
+function submitPath(){
+  if(roundOver) return;
+  const ok = picks.length===answerPath.length && picks.every((c,i)=>c===answerPath[i]);
+  if(ok) correct(); else gameOver();
+}
+
+/* ================= results ================= */
+function correct(){
+  roundOver = true;
+  streak++;
+  $("streak").textContent = streak;
+  const b = getBest(bestKey());
+  if(streak > b){ localStorage.setItem(bestKey(), streak); $("best").textContent = streak; }
+  $("feedback").textContent = mode==="guess" ? `✔ ${current.n}!` : "✔ Perfect path!";
+  $("feedback").className = "feedback good";
+  if(mode==="guess") $("guessInput").disabled = true;
+  setTimeout(nextRound, 900);
+}
+
+function pathString(p){
+  return p.s.map(s=>`${TEAMS[s[0]].name} (${yrs(s)})`).join("  →  ");
+}
+
+function gameOver(){
+  roundOver = true;
+  $("gameCard").classList.remove("shake");
+  void $("gameCard").offsetWidth;
+  $("gameCard").classList.add("shake");
+  $("feedback").textContent = "✘ Streak over!";
+  $("feedback").className = "feedback bad";
+  $("guessView").classList.add("hidden");
+  $("pathView").classList.add("hidden");
+  $("revealName").textContent = current.n;
+  $("revealPath").innerHTML = pathString(current);
+  const b = getBest(bestKey());
+  const isNew = streak > b;
+  if(isNew) localStorage.setItem(bestKey(), streak);
+  $("finalStreak").textContent = streak;
+  $("finalBest").textContent = Math.max(streak, b);
+  $("newBest").classList.toggle("hidden", !isNew || streak===0);
+  $("gameOver").classList.remove("hidden");
+}
+
+/* ================= init ================= */
+refreshHomeBests();
+</script>
+</body>
+</html>
