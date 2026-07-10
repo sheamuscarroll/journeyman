@@ -64,6 +64,7 @@ header{text-align:center;padding:26px 0 8px}
 }
 .toggle input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
 .toggle .on{color:var(--accent)}
+.global-toggle{display:flex;justify-content:center;margin-top:12px}
 .footer-note{margin-top:48px;text-align:center;color:var(--faint);font-size:.78rem}
 
 /* ---------- game shell ---------- */
@@ -188,16 +189,16 @@ header{text-align:center;padding:26px 0 8px}
     <header>
       <div class="logo"><span class="ball">🏀</span> Journeyman</div>
       <div class="tagline">How well do you know NBA career paths?</div>
+      <div class="global-toggle">
+        <label class="toggle" title="Adds lesser-known careers (journeymen, role players) to every mode, disables hints, and removes ambiguous paths from Who Am I.">
+          <input type="checkbox" id="hardToggle">
+          <span id="hardLabel">Hard mode — deeper player pool, no hints</span>
+        </label>
+      </div>
     </header>
 
-    <div class="section-label">
-      <span>Who Am I?</span>
-      <label class="toggle" title="Hide the years on every career block. Careers that would be ambiguous without years (e.g. a lone Lakers block) are removed from the puzzle pool.">
-        <input type="checkbox" id="hardToggle">
-        <span id="hardLabel">Hard mode</span>
-      </label>
-    </div>
-    <div class="mode-desc" id="guessDesc">You get the career team history — name the player. One second chance per player.</div>
+    <div class="section-label"><span>Who Am I?</span></div>
+    <div class="mode-desc" id="guessDesc">You get a career's team path — name the player. Stuck? Two hints: position, then the years.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('guess','active')">
         <h3>Active Players</h3>
@@ -212,7 +213,7 @@ header{text-align:center;padding:26px 0 8px}
     </div>
 
     <div class="section-label"><span>Career Path</span></div>
-    <div class="mode-desc">You get the player — rebuild the teams they played for, in order. Team names match the player's era (SEA, not OKC, for Shawn Kemp). Only multi-team careers appear.</div>
+    <div class="mode-desc">You get the player — rebuild the teams they played for, in order. Team names match the player's era (SEA, not OKC, for Shawn Kemp). Only multi-team careers appear; hard mode adds lesser-known ones.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('path','active')">
         <h3>Active Players</h3>
@@ -246,8 +247,8 @@ header{text-align:center;padding:26px 0 8px}
         <div class="prompt-label">This player's career path…</div>
         <div class="stints" id="stints"></div>
         <div class="hint-row" id="hintRow">
-          <button class="hint-btn" id="hintBtn" onclick="showHint()">Need a hint?</button>
           <span class="hint-text hidden" id="hintText"></span>
+          <button class="hint-btn" id="hintBtn" onclick="showHint()">Hint 1 of 2: position</button>
         </div>
         <div class="guess-area">
           <input class="guess-input" id="guessInput" type="text" autocomplete="off"
@@ -308,6 +309,8 @@ let answerPath = [];      // merged team codes for current player
 let roundOver = false;
 let sugIndex = -1;
 let hardMode = localStorage.getItem("jm_hard") === "1";
+let hintsUsed = 0;        // easy-mode hints used this round (max 2)
+let yearsShown = false;   // hint 2 reveals years on the career blocks
 
 const $ = id => document.getElementById(id);
 
@@ -364,27 +367,29 @@ function sigHard(p){
 function sigEasy(p){
   return p.s.map(s => `${eraInfo(s[0], s[1], s[2]).label}:${s[1]}-${s[2]}`).join(">");
 }
+/* well-known players make up the default (easy) pool; hard mode opens the full pool */
+function isKnown(p){ return WELL_KNOWN.has(p.n) || GREATS.has(p.n); }
+
 /* pool a puzzle answer may be drawn from */
 function answerPool(){
   let ps = basePool();
+  if (!hardMode) ps = ps.filter(isKnown);                 // easy: famous careers only
   if (mode === 'path'){
     ps = ps.filter(p => mergedPath(p).length >= 2);       // multi-team careers only
   } else if (hardMode){
     const counts = {};
     ps.forEach(p => { const k = sigHard(p); counts[k] = (counts[k] || 0) + 1; });
-    ps = ps.filter(p => counts[sigHard(p)] === 1);        // no ambiguous careers
+    ps = ps.filter(p => counts[sigHard(p)] === 1);        // no hints exist, so no ambiguous careers
   }
   return ps;
 }
 
-function isHardGame(){ return mode === 'guess' && hardMode; }
-function bestKey(){ return `jm_best_${mode}_${pool}` + (isHardGame() ? "_hard" : ""); }
+function bestKey(){ return `jm_best_${mode}_${pool}` + (hardMode ? "_hard" : ""); }
 function getBest(k){ return parseInt(localStorage.getItem(k) || "0", 10); }
 
 function refreshHomeBests(){
   document.querySelectorAll("[data-best]").forEach(el => {
-    const suffix = (hardMode && el.dataset.best.startsWith("guess")) ? "_hard" : "";
-    el.textContent = getBest("jm_best_" + el.dataset.best + suffix);
+    el.textContent = getBest("jm_best_" + el.dataset.best + (hardMode ? "_hard" : ""));
   });
 }
 
@@ -420,7 +425,7 @@ function startGame(m, po){
   $("home").classList.add("hidden");
   $("game").classList.remove("hidden");
   $("modeTitle").innerHTML = MODE_NAMES[`${mode}_${pool}`] +
-    (isHardGame() ? ' <span class="hard-tag">· HARD</span>' : "");
+    (hardMode ? ' <span class="hard-tag">· HARD</span>' : "");
   $("best").textContent = getBest(bestKey());
   nextRound();
 }
@@ -439,6 +444,8 @@ function nextRound(){
   roundOver = false;
   triesLeft = 2;
   picks = [];
+  hintsUsed = 0;
+  yearsShown = false;
 
   $("feedback").textContent = "";
   $("feedback").className = "feedback";
@@ -450,7 +457,8 @@ function nextRound(){
     $("guessView").classList.remove("hidden");
     $("pathView").classList.add("hidden");
     renderStints();
-    $("hintBtn").classList.remove("hidden");
+    $("hintBtn").textContent = "Hint 1 of 2: position";
+    $("hintBtn").classList.toggle("hidden", hardMode);   // no hints in hard mode
     $("hintText").classList.add("hidden");
     $("tries").textContent = "";
     const inp = $("guessInput");
@@ -471,10 +479,11 @@ function nextRound(){
 function renderStints(){
   const box = $("stints");
   box.innerHTML = "";
-  /* hard mode: hide years and collapse repeat blocks (CHI,CHI → CHI) */
-  const items = isHardGame()
-    ? mergedBlocks(current)
-    : current.s.map(s => ({code: s[0], from: s[1], to: s[2]}));
+  /* years are hidden by default; hint 2 (easy mode only) reveals them.
+     without years, repeat blocks collapse (CHI,CHI → CHI). */
+  const items = yearsShown
+    ? current.s.map(s => ({code: s[0], from: s[1], to: s[2]}))
+    : mergedBlocks(current);
   items.forEach((b, i) => {
     if (i > 0){
       const ar = document.createElement("div");
@@ -486,18 +495,24 @@ function renderStints(){
     d.className = "stint";
     d.style.setProperty("--tc", info.color);
     d.innerHTML = `<span class="abbr">${info.label}</span>` +
-      (isHardGame() ? "" : `<span class="yrs">${yrsText(b.from, b.to)}</span>`);
+      (yearsShown ? `<span class="yrs">${yrsText(b.from, b.to)}</span>` : "");
     box.appendChild(d);
   });
 }
+/* easy mode only: hint 1 = position, hint 2 = reveal the years */
 function showHint(){
-  $("hintBtn").classList.add("hidden");
+  if (hardMode || mode !== "guess" || roundOver || hintsUsed >= 2) return;
+  hintsUsed++;
   const t = $("hintText");
-  /* years are visible in easy mode, so debut year is only a hint in hard mode */
-  t.textContent = isHardGame()
-    ? `${posName(current.p)} · debuted ${current.s[0][1]}`
-    : posName(current.p);
-  t.classList.remove("hidden");
+  if (hintsUsed === 1){
+    t.textContent = posName(current.p);
+    t.classList.remove("hidden");
+    $("hintBtn").textContent = "Hint 2 of 2: reveal years";
+  } else {
+    yearsShown = true;
+    renderStints();
+    $("hintBtn").classList.add("hidden");
+  }
 }
 function posName(p){
   return {PG:"Point guard", SG:"Shooting guard", SF:"Small forward", PF:"Power forward", C:"Center"}[p] || p;
@@ -505,13 +520,13 @@ function posName(p){
 function norm(s){
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
 }
-/* a guess is right if it names the player OR any player with the identical
-   career path — teams+exact years in easy mode, team sequence in hard mode */
+/* a guess is right if it names the player OR any player with an identical
+   career path — team sequence while years are hidden, exact years once revealed */
 function guessMatches(guessed){
   if (norm(guessed.n) === norm(current.n)) return true;
-  return isHardGame()
-    ? sigHard(guessed) === sigHard(current)
-    : sigEasy(guessed) === sigEasy(current);
+  return yearsShown
+    ? sigEasy(guessed) === sigEasy(current)
+    : sigHard(guessed) === sigHard(current);
 }
 
 const inp = document.getElementById("guessInput");
@@ -568,7 +583,7 @@ function submitGuess(name){
       $("gameCard").classList.remove("shake");
       void $("gameCard").offsetWidth;
       $("gameCard").classList.add("shake");
-      if ($("hintText").classList.contains("hidden")) showHint();
+      showHint();   // easy mode: a miss unlocks the next hint automatically
     } else {
       gameOver();
     }
@@ -681,12 +696,12 @@ hardToggle.addEventListener("change", () => {
   localStorage.setItem("jm_hard", hardMode ? "1" : "0");
   $("hardLabel").classList.toggle("on", hardMode);
   $("guessDesc").textContent = hardMode
-    ? "Hard mode: no years shown, and any career you could confuse with another player's is removed. Name the player."
-    : "You get the career team history — name the player. One second chance per player.";
+    ? "Hard mode: journeymen and role players join the pool, and there are no hints. Name the player from the team path alone."
+    : "You get a career's team path — name the player. Stuck? Two hints: position, then the years.";
   refreshHomeBests();
 });
 if (hardMode) $("guessDesc").textContent =
-  "Hard mode: no years shown, and any career you could confuse with another player's is removed. Name the player.";
+  "Hard mode: journeymen and role players join the pool, and there are no hints. Name the player from the team path alone.";
 $("footerNote").textContent = `Rosters current as of ${DATA_UPDATED} · Built by Sheamus Carroll`;
 refreshHomeBests();
 </script>

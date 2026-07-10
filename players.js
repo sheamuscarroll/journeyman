@@ -10,6 +10,8 @@
    `f` = year the franchise entered the NBA (used to build era-accurate
    team pickers in Career Path mode).
    GREATS = active players who also appear in the All-Time pool.
+   WELL_KNOWN = players famous enough for the default (easy) puzzle pool.
+   Anyone not listed there only appears in hard mode.
    To update after trades: edit the stints, bump DATA_UPDATED, run npm test.
    ============================================================ */
 
@@ -57,6 +59,40 @@ const GREATS = new Set([
   "DeMar DeRozan","Klay Thompson","Draymond Green","Jrue Holiday","Rudy Gobert",
   "Domantas Sabonis","Trae Young","Ja Morant","Anthony Edwards","Jalen Brunson",
   "Bam Adebayo","Pascal Siakam"
+]);
+
+/* Players famous enough for the default (easy) Who Am I / Career Path pools.
+   All GREATS are automatically included — this list adds everyone else.
+   Players in neither list appear only in hard mode. */
+const WELL_KNOWN = new Set([
+  // active
+  "Zion Williamson","LaMelo Ball","Victor Wembanyama","Cade Cunningham","Paolo Banchero",
+  "Chet Holmgren","Tyrese Haliburton","Tyrese Maxey","Scottie Barnes","Evan Mobley",
+  "Darius Garland","Jarrett Allen","Tyler Herro","Andrew Wiggins","Khris Middleton",
+  "Myles Turner","Brook Lopez","Ben Simmons","Julius Randle","Zach LaVine",
+  "De'Aaron Fox","Nikola Vucevic","CJ McCollum","Kristaps Porzingis","Aaron Gordon",
+  "Jamal Murray","Michael Porter Jr.","Deandre Ayton","Desmond Bane","Mikal Bridges",
+  "OG Anunoby","RJ Barrett","Brandon Ingram","Lauri Markkanen","Jaren Jackson Jr.",
+  "Cooper Flagg","Jakob Poeltl","Fred VanVleet","Jalen Green","Dillon Brooks",
+  "Austin Reaves","Jalen Williams","Franz Wagner","Josh Giddey","Kyle Lowry",
+  // all-time
+  "Michael Jordan","Kareem Abdul-Jabbar","Magic Johnson","Larry Bird","Wilt Chamberlain",
+  "Bill Russell","Jerry West","Oscar Robertson","Elgin Baylor","John Havlicek",
+  "Walt Frazier","Pete Maravich","Bill Walton","George Gervin","Moses Malone",
+  "Julius Erving","James Worthy","Kevin McHale","Robert Parish","Isiah Thomas",
+  "Dominique Wilkins","Reggie Miller","Chris Mullin","Tim Hardaway","Anfernee Hardaway",
+  "Latrell Sprewell","Stephon Marbury","Larry Johnson","Alonzo Mourning","Dikembe Mutombo",
+  "Grant Hill","Tracy McGrady","Vince Carter","Ray Allen","Paul Pierce",
+  "Dwyane Wade","Chris Bosh","Carmelo Anthony","Dwight Howard","Pau Gasol",
+  "Marc Gasol","Tony Parker","Manu Ginobili","Chauncey Billups","Chris Webber",
+  "Rasheed Wallace","Ben Wallace","Dennis Rodman","Scottie Pippen","Patrick Ewing",
+  "Clyde Drexler","David Robinson","Gary Payton","Shawn Kemp","Charles Barkley",
+  "Karl Malone","John Stockton","Hakeem Olajuwon","Shaquille O'Neal","Tim Duncan",
+  "Kobe Bryant","Dirk Nowitzki","Kevin Garnett","Allen Iverson","Steve Nash",
+  "Jason Kidd","Yao Ming","Amar'e Stoudemire","Deron Williams","Joe Johnson",
+  "Zach Randolph","LaMarcus Aldridge","Derrick Rose","Rajon Rondo","Andre Iguodala",
+  "J.R. Smith","Blake Griffin","DeMarcus Cousins","Kemba Walker","Baron Davis",
+  "Gilbert Arenas","Chris Paul"
 ]);
 
 const PLAYERS = [
@@ -178,7 +214,7 @@ const PLAYERS = [
 {n:"James Harden",p:"SG",act:1,s:[["OKC",2009,2012],["HOU",2012,2021],["BKN",2021,2022],["PHI",2022,2023],["LAC",2023,2026],["CLE",2026,0]]},
 {n:"Russell Westbrook",p:"PG",act:1,s:[["OKC",2008,2019],["HOU",2019,2020],["WAS",2020,2021],["LAL",2021,2023],["LAC",2023,2024],["DEN",2024,2025],["SAC",2025,0]]},
 {n:"Anthony Davis",p:"PF",act:1,s:[["NOP",2012,2020],["LAL",2020,2025],["DAL",2025,2026],["WAS",2026,0]]},
-{n:"Kawhi Leonard",p:"SF",act:1,s:[["SAS",2011,2018],["TOR",2018,2019],["LAC",2019,2026],["TOR",2026,0]]},
+{n:"Kawhi Leonard",p:"SF",act:1,s:[["SAS",2011,2018],["TOR",2018,2019],["LAC",2019,0]]},
 {n:"Paul George",p:"SF",act:1,s:[["IND",2010,2017],["OKC",2017,2019],["LAC",2019,2024],["PHI",2024,2026],["BOS",2026,0]]},
 {n:"Damian Lillard",p:"PG",act:1,s:[["POR",2012,2023],["MIL",2023,2025],["POR",2025,0]]},
 {n:"Jimmy Butler",p:"SF",act:1,s:[["CHI",2011,2017],["MIN",2017,2018],["PHI",2018,2019],["MIA",2019,2025],["GSW",2025,0]]},
@@ -192,7 +228,7 @@ const PLAYERS = [
 {n:"Shai Gilgeous-Alexander",p:"PG",act:1,s:[["LAC",2018,2019],["OKC",2019,0]]},
 {n:"Ja Morant",p:"PG",act:1,s:[["MEM",2019,2026],["POR",2026,0]]},
 {n:"Zion Williamson",p:"PF",act:1,s:[["NOP",2019,0]]},
-{n:"Trae Young",p:"PG",act:1,s:[["ATL",2018,0]]},
+{n:"Trae Young",p:"PG",act:1,s:[["ATL",2018,2026],["WAS",2026,0]]},
 {n:"Donovan Mitchell",p:"SG",act:1,s:[["UTA",2017,2022],["CLE",2022,0]]},
 {n:"Darius Garland",p:"PG",act:1,s:[["CLE",2019,2026],["LAC",2026,0]]},
 {n:"Jarrett Allen",p:"C",act:1,s:[["BKN",2017,2021],["CLE",2021,0]]},
@@ -201,7 +237,7 @@ const PLAYERS = [
 {n:"Tyler Herro",p:"SG",act:1,s:[["MIA",2019,2026],["MIL",2026,0]]},
 {n:"Karl-Anthony Towns",p:"C",act:1,s:[["MIN",2015,2024],["NYK",2024,0]]},
 {n:"Anthony Edwards",p:"SG",act:1,s:[["MIN",2020,0]]},
-{n:"Julius Randle",p:"PF",act:1,s:[["LAL",2014,2017],["NOP",2017,2019],["NYK",2019,2024],["MIN",2024,0]]},
+{n:"Julius Randle",p:"PF",act:1,s:[["LAL",2014,2017],["NOP",2017,2019],["NYK",2019,2024],["MIN",2024,2026],["BKN",2026,0]]},
 {n:"Rudy Gobert",p:"C",act:1,s:[["UTA",2013,2022],["MIN",2022,0]]},
 {n:"De'Aaron Fox",p:"PG",act:1,s:[["SAC",2017,2025],["SAS",2025,0]]},
 {n:"Victor Wembanyama",p:"C",act:1,s:[["SAS",2023,0]]},
@@ -238,14 +274,14 @@ const PLAYERS = [
 {n:"Steven Adams",p:"C",act:1,s:[["OKC",2013,2020],["NOP",2020,2021],["MEM",2021,2024],["HOU",2024,0]]},
 {n:"Dillon Brooks",p:"SF",act:1,s:[["MEM",2017,2023],["HOU",2023,2025],["PHX",2025,0]]},
 {n:"Jalen Green",p:"SG",act:1,s:[["HOU",2021,2025],["PHX",2025,0]]},
-{n:"Grayson Allen",p:"SG",act:1,s:[["UTA",2018,2019],["MEM",2019,2021],["MIL",2021,2023],["PHX",2023,0]]},
+{n:"Grayson Allen",p:"SG",act:1,s:[["UTA",2018,2019],["MEM",2019,2021],["MIL",2021,2023],["PHX",2023,2026],["CHA",2026,0]]},
 {n:"Tyrese Haliburton",p:"PG",act:1,s:[["SAC",2020,2022],["IND",2022,0]]},
 {n:"Pascal Siakam",p:"PF",act:1,s:[["TOR",2016,2024],["IND",2024,0]]},
 {n:"Andrew Nembhard",p:"PG",act:1,s:[["IND",2022,0]]},
 {n:"Aaron Nesmith",p:"SF",act:1,s:[["BOS",2020,2022],["IND",2022,0]]},
 {n:"T.J. McConnell",p:"PG",act:1,s:[["PHI",2015,2019],["IND",2019,0]]},
 {n:"Obi Toppin",p:"PF",act:1,s:[["NYK",2020,2023],["IND",2023,0]]},
-{n:"Bennedict Mathurin",p:"SG",act:1,s:[["IND",2022,0]]},
+{n:"Bennedict Mathurin",p:"SG",act:1,s:[["IND",2022,2026],["LAC",2026,0]]},
 {n:"Ivica Zubac",p:"C",act:1,s:[["LAL",2016,2019],["LAC",2019,2026],["IND",2026,0]]},
 {n:"Myles Turner",p:"C",act:1,s:[["IND",2015,2025],["MIL",2025,0]]},
 {n:"Khris Middleton",p:"SF",act:1,s:[["DET",2012,2013],["MIL",2013,2025],["WAS",2025,2026],["DAL",2026,2026],["WAS",2026,0]]},
@@ -275,29 +311,29 @@ const PLAYERS = [
 {n:"Christian Braun",p:"SG",act:1,s:[["DEN",2022,0]]},
 {n:"Michael Porter Jr.",p:"SF",act:1,s:[["DEN",2018,2025],["BKN",2025,0]]},
 {n:"Cam Thomas",p:"SG",act:1,s:[["BKN",2021,0]]},
-{n:"Nic Claxton",p:"C",act:1,s:[["BKN",2019,0]]},
+{n:"Nic Claxton",p:"C",act:1,s:[["BKN",2019,2026],["CHI",2026,0]]},
 {n:"Cade Cunningham",p:"PG",act:1,s:[["DET",2021,0]]},
 {n:"Jalen Duren",p:"C",act:1,s:[["DET",2022,0]]},
 {n:"Ausar Thompson",p:"SF",act:1,s:[["DET",2023,0]]},
-{n:"Tobias Harris",p:"PF",act:1,s:[["MIL",2011,2013],["ORL",2013,2016],["DET",2016,2018],["LAC",2018,2019],["PHI",2019,2024],["DET",2024,0]]},
+{n:"Tobias Harris",p:"PF",act:1,s:[["MIL",2011,2013],["ORL",2013,2016],["DET",2016,2018],["LAC",2018,2019],["PHI",2019,2024],["DET",2024,2026],["SAS",2026,0]]},
 {n:"Jaden Ivey",p:"SG",act:1,s:[["DET",2022,2026],["CHI",2026,0]]},
 {n:"Coby White",p:"SG",act:1,s:[["CHI",2019,2026],["CHA",2026,0]]},
 {n:"Josh Giddey",p:"PG",act:1,s:[["OKC",2021,2024],["CHI",2024,0]]},
 {n:"Matas Buzelis",p:"SF",act:1,s:[["CHI",2024,0]]},
-{n:"Collin Sexton",p:"PG",act:1,s:[["CLE",2018,2022],["UTA",2022,2025],["CHA",2025,2026],["CHI",2026,0]]},
+{n:"Collin Sexton",p:"PG",act:1,s:[["CLE",2018,2022],["UTA",2022,2025],["CHA",2025,2026],["CHI",2026,2026],["LAL",2026,0]]},
 {n:"Nikola Vucevic",p:"C",act:1,s:[["PHI",2011,2012],["ORL",2012,2021],["CHI",2021,2026],["BOS",2026,0]]},
 {n:"Anfernee Simons",p:"SG",act:1,s:[["POR",2018,2025],["BOS",2025,2026],["CHI",2026,0]]},
 {n:"Derrick White",p:"PG",act:1,s:[["SAS",2018,2022],["BOS",2022,0]]},
 {n:"Payton Pritchard",p:"PG",act:1,s:[["BOS",2020,0]]},
 {n:"Tyrese Maxey",p:"PG",act:1,s:[["PHI",2020,0]]},
-{n:"Quentin Grimes",p:"SG",act:1,s:[["NYK",2021,2024],["DET",2024,2025],["DAL",2025,2025],["PHI",2025,0]]},
+{n:"Quentin Grimes",p:"SG",act:1,s:[["NYK",2021,2024],["DET",2024,2025],["DAL",2025,2025],["PHI",2025,2026],["LAL",2026,0]]},
 {n:"Kelly Oubre Jr.",p:"SF",act:1,s:[["WAS",2015,2019],["PHX",2019,2020],["GSW",2020,2021],["CHA",2021,2023],["PHI",2023,2026],["IND",2026,0]]},
-{n:"Kyle Lowry",p:"PG",act:0,s:[["MEM",2006,2009],["HOU",2009,2012],["TOR",2012,2021],["MIA",2021,2024],["PHI",2024,2026]]},
+{n:"Kyle Lowry",p:"PG",act:1,s:[["MEM",2006,2009],["HOU",2009,2012],["TOR",2012,2021],["MIA",2021,2024],["PHI",2024,0]]},
 {n:"Trey Murphy III",p:"SF",act:1,s:[["NOP",2021,0]]},
 {n:"Herbert Jones",p:"SF",act:1,s:[["NOP",2021,0]]},
 {n:"Dejounte Murray",p:"PG",act:1,s:[["SAS",2016,2022],["ATL",2022,2024],["NOP",2024,0]]},
 {n:"Jordan Poole",p:"SG",act:1,s:[["GSW",2019,2023],["WAS",2023,2025],["NOP",2025,0]]},
-{n:"CJ McCollum",p:"SG",act:1,s:[["POR",2013,2022],["NOP",2022,2025],["WAS",2025,0]]},
+{n:"CJ McCollum",p:"SG",act:1,s:[["POR",2013,2022],["NOP",2022,2025],["WAS",2025,2026],["ATL",2026,0]]},
 {n:"Alex Sarr",p:"C",act:1,s:[["WAS",2024,0]]},
 {n:"Bilal Coulibaly",p:"SG",act:1,s:[["WAS",2023,0]]},
 {n:"Jerami Grant",p:"PF",act:1,s:[["PHI",2014,2016],["OKC",2016,2019],["DEN",2019,2020],["DET",2020,2022],["POR",2022,2026],["MEM",2026,0]]},
@@ -312,12 +348,12 @@ const PLAYERS = [
 {n:"Zach Edey",p:"C",act:1,s:[["MEM",2024,0]]},
 {n:"Kentavious Caldwell-Pope",p:"SG",act:1,s:[["DET",2013,2017],["LAL",2017,2021],["WAS",2021,2023],["DEN",2023,2024],["ORL",2024,2025],["MEM",2025,0]]},
 {n:"Austin Reaves",p:"SG",act:1,s:[["LAL",2021,0]]},
-{n:"Rui Hachimura",p:"PF",act:1,s:[["WAS",2019,2023],["LAL",2023,0]]},
-{n:"Deandre Ayton",p:"C",act:1,s:[["PHX",2018,2023],["POR",2023,2025],["LAL",2025,2026],["WAS",2026,0]]},
+{n:"Rui Hachimura",p:"PF",act:1,s:[["WAS",2019,2023],["LAL",2023,2026],["LAC",2026,0]]},
+{n:"Deandre Ayton",p:"C",act:1,s:[["PHX",2018,2023],["POR",2023,2025],["LAL",2025,0]]},
 {n:"LaMelo Ball",p:"PG",act:1,s:[["CHA",2020,2026],["MIN",2026,0]]},
 {n:"Brandon Miller",p:"SF",act:1,s:[["CHA",2023,0]]},
-{n:"Miles Bridges",p:"SF",act:1,s:[["CHA",2018,0]]},
-{n:"Naz Reid",p:"C",act:1,s:[["MIN",2019,0]]},
+{n:"Miles Bridges",p:"SF",act:1,s:[["CHA",2018,2026],["PHX",2026,0]]},
+{n:"Naz Reid",p:"C",act:1,s:[["MIN",2019,2026],["CHA",2026,0]]},
 {n:"Jaden McDaniels",p:"SF",act:1,s:[["MIN",2020,0]]},
 {n:"Donte DiVincenzo",p:"SG",act:1,s:[["MIL",2018,2022],["SAC",2022,2022],["GSW",2022,2023],["NYK",2023,2024],["MIN",2024,0]]},
 {n:"P.J. Washington",p:"PF",act:1,s:[["CHA",2019,2024],["DAL",2024,0]]},
@@ -325,16 +361,16 @@ const PLAYERS = [
 {n:"Dereck Lively II",p:"C",act:1,s:[["DAL",2023,0]]},
 {n:"Cooper Flagg",p:"SF",act:1,s:[["DAL",2025,0]]},
 {n:"Terry Rozier",p:"PG",act:1,s:[["BOS",2015,2019],["CHA",2019,2024],["MIA",2024,0]]},
-{n:"Andre Drummond",p:"C",act:1,s:[["DET",2012,2020],["CLE",2020,2021],["LAL",2021,2021],["PHI",2021,2022],["BKN",2022,2023],["CHI",2023,2024],["PHI",2024,0]]},
+{n:"Andre Drummond",p:"C",act:1,s:[["DET",2012,2020],["CLE",2020,2021],["LAL",2021,2021],["PHI",2021,2022],["BKN",2022,2023],["CHI",2023,2024],["PHI",2024,2026],["NYK",2026,0]]},
 {n:"Ben Simmons",p:"PG",act:1,s:[["PHI",2016,2022],["BKN",2022,2025],["LAC",2025,0]]},
 {n:"Caris LeVert",p:"SG",act:1,s:[["BKN",2016,2021],["IND",2021,2022],["CLE",2022,2025],["ATL",2025,0]]},
-{n:"Tim Hardaway Jr.",p:"SG",act:1,s:[["NYK",2013,2015],["ATL",2015,2017],["NYK",2017,2019],["DAL",2019,2024],["DET",2024,0]]},
+{n:"Tim Hardaway Jr.",p:"SG",act:1,s:[["NYK",2013,2015],["ATL",2015,2017],["NYK",2017,2019],["DAL",2019,2024],["DET",2024,2026],["MIA",2026,0]]},
 {n:"Jusuf Nurkic",p:"C",act:1,s:[["DEN",2014,2017],["POR",2017,2024],["PHX",2024,2025],["CHA",2025,2025],["UTA",2025,0]]},
 {n:"Scottie Barnes",p:"SF",act:1,s:[["TOR",2021,0]]},
 {n:"RJ Barrett",p:"SF",act:1,s:[["NYK",2019,2024],["TOR",2024,0]]},
 {n:"Immanuel Quickley",p:"PG",act:1,s:[["NYK",2020,2024],["TOR",2024,0]]},
-{n:"Brandon Ingram",p:"SF",act:1,s:[["LAL",2016,2019],["NOP",2019,2025],["TOR",2025,2026],["LAC",2026,0]]},
+{n:"Brandon Ingram",p:"SF",act:1,s:[["LAL",2016,2019],["NOP",2019,2025],["TOR",2025,0]]},
 {n:"Jakob Poeltl",p:"C",act:1,s:[["TOR",2016,2018],["SAS",2018,2023],["TOR",2023,0]]}
 ];
 
-if (typeof module !== "undefined") module.exports = { TEAMS, PLAYERS, GREATS, DATA_UPDATED };
+if (typeof module !== "undefined") module.exports = { TEAMS, PLAYERS, GREATS, WELL_KNOWN, DATA_UPDATED };

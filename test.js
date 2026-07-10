@@ -6,7 +6,7 @@ if (scripts.length !== 1) { console.log("unexpected script count", scripts.lengt
 new Function(scripts[0]); // parse only — throws on syntax error
 console.log("inline script parses OK");
 
-const { TEAMS, PLAYERS, GREATS, DATA_UPDATED } = require("./players.js");
+const { TEAMS, PLAYERS, GREATS, WELL_KNOWN, DATA_UPDATED } = require("./players.js");
 
 let errs = [];
 const names = new Set();
@@ -44,11 +44,30 @@ for (const g of GREATS) {
   if (!p) errs.push("GREATS entry not in PLAYERS: " + g);
   else if (p.act !== 1) errs.push("GREATS entry not active: " + g);
 }
+for (const w of WELL_KNOWN) {
+  if (!PLAYERS.find(x => x.n === w)) errs.push("WELL_KNOWN entry not in PLAYERS: " + w);
+}
 
-// specific regression checks
+// specific regression checks (verified vs. news reports, July 9, 2026)
 const cur = n => { const p = PLAYERS.find(x => x.n === n); return p && p.s[p.s.length - 1][0]; };
-if (cur("Bobby Portis") !== "MIA") errs.push("Bobby Portis should end on MIA (Giannis trade)");
-if (cur("Giannis Antetokounmpo") !== "MIA") errs.push("Giannis should end on MIA");
+const CURRENT = {
+  "Bobby Portis":"MIA", "Giannis Antetokounmpo":"MIA", "Collin Sexton":"LAL",
+  "Quentin Grimes":"LAL", "Tobias Harris":"SAS", "Trae Young":"WAS",
+  "Kristaps Porzingis":"GSW", "CJ McCollum":"ATL", "Julius Randle":"BKN",
+  "Nic Claxton":"CHI", "Naz Reid":"CHA", "Miles Bridges":"PHX",
+  "Grayson Allen":"CHA", "Tim Hardaway Jr.":"MIA", "Rui Hachimura":"LAC",
+  "Bennedict Mathurin":"LAC", "Jaylen Brown":"PHI", "Paul George":"BOS",
+  "Kelly Oubre Jr.":"IND", "Andre Drummond":"NYK",
+  // unverified/pending moves must stay put:
+  // Kawhi trade to TOR on hold (NBA "Aspiration" investigation) — both sides unchanged
+  "Kawhi Leonard":"LAC", "Brandon Ingram":"TOR",
+  "Deandre Ayton":"LAL", "Kyle Lowry":"PHI"
+};
+for (const [n, t] of Object.entries(CURRENT)) {
+  if (cur(n) !== t) errs.push(`${n} should end on ${t}, got ${cur(n)}`);
+}
+const lowry = PLAYERS.find(p => p.n === "Kyle Lowry");
+if (lowry && lowry.act !== 1) errs.push("Kyle Lowry retirement is unverified — keep active");
 if (PLAYERS.find(p => p.n === "David West")) errs.push("David West should be removed");
 if (PLAYERS.find(p => p.n === "Joe Dumars")) errs.push("Joe Dumars should be removed");
 

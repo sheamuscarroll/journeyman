@@ -19,14 +19,20 @@ expect("footer shows updated-as-of date",
 /* ---- Who Am I (easy): correct guess ---- */
 w.eval(`startGame('guess','active')`);
 expect("game visible after start", !w.document.getElementById("game").classList.contains("hidden"));
-expect("easy mode shows years", w.document.querySelectorAll("#stints .yrs").length > 0);
+expect("years hidden by default", w.document.querySelectorAll("#stints .yrs").length === 0);
+expect("easy pool = well-known players only", w.eval(`answerPool().every(p => isKnown(p))`));
 w.eval(`submitGuess(current.n)`);
 expect("correct guess -> streak 1", w.document.getElementById("streak").textContent === "1");
 
-/* ---- easy-mode hint has no debut year ---- */
+/* ---- easy-mode two-hint system ---- */
 w.eval(`nextRound(); showHint();`);
-expect("easy hint = position only (no debut year)",
-  !w.document.getElementById("hintText").textContent.includes("debut"));
+expect("hint 1 = position (no debut year)",
+  !w.document.getElementById("hintText").textContent.includes("debut") &&
+  w.document.getElementById("hintText").textContent.length > 2);
+expect("hint button now offers years", w.document.getElementById("hintBtn").textContent.includes("years"));
+w.eval(`showHint();`);
+expect("hint 2 reveals years", w.document.querySelectorAll("#stints .yrs").length > 0);
+expect("no third hint", w.eval(`hintsUsed`) === 2 && w.document.getElementById("hintBtn").classList.contains("hidden"));
 
 /* ---- Who Am I: two wrong guesses -> game over ---- */
 w.eval(`startGame('guess','alltime')`);
@@ -48,6 +54,8 @@ toggle.dispatchEvent(new w.Event("change", { bubbles: true }));
 w.eval(`startGame('guess','alltime')`);
 expect("hard mode flagged in title", w.document.getElementById("modeTitle").textContent.includes("HARD"));
 expect("hard mode hides years", w.document.querySelectorAll("#stints .yrs").length === 0);
+expect("hard mode hides hint button", w.document.getElementById("hintBtn").classList.contains("hidden"));
+expect("hard pool includes deep cuts", w.eval(`answerPool().some(p => !isKnown(p))`));
 expect("hard pool has no ambiguous careers", w.eval(`
   (() => { const ps = answerPool(); const c = {};
     ps.forEach(p => { const k = sigHard(p); c[k] = (c[k]||0)+1; });
@@ -55,7 +63,7 @@ expect("hard pool has no ambiguous careers", w.eval(`
 `));
 expect("hard pool drops single-block Lakers legends", w.eval(`!answerPool().some(p => p.n === "Kobe Bryant")`));
 w.eval(`showHint()`);
-expect("hard hint includes debut year", w.document.getElementById("hintText").textContent.includes("debuted"));
+expect("showHint is a no-op in hard mode", w.eval(`hintsUsed`) === 0);
 
 /* ---- duplicate career paths both count (easy mode) ---- */
 toggle.checked = false;
@@ -110,7 +118,7 @@ w.eval(`
 `);
 expect("wrong path -> game over", !w.document.getElementById("gameOver").classList.contains("hidden"));
 
-/* ---- Career Path pool: multi-team careers only ---- */
+/* ---- Career Path pool: multi-team careers only, fame split ---- */
 expect("path pool has no single-team players", w.eval(`
   (() => { mode='path'; pool='alltime';
     return answerPool().every(p => mergedPath(p).length >= 2); })()
@@ -118,6 +126,14 @@ expect("path pool has no single-team players", w.eval(`
 expect("path pool (active) has no single-team players", w.eval(`
   (() => { mode='path'; pool='active';
     return answerPool().every(p => mergedPath(p).length >= 2); })()
+`));
+expect("easy path pool excludes deep cuts like Trevor Ariza", w.eval(`
+  (() => { hardMode=false; mode='path'; pool='alltime';
+    return !answerPool().some(p => p.n === "Trevor Ariza"); })()
+`));
+expect("hard path pool includes Trevor Ariza", w.eval(`
+  (() => { hardMode=true; mode='path'; pool='alltime';
+    const r = answerPool().some(p => p.n === "Trevor Ariza"); hardMode=false; return r; })()
 `));
 
 /* ---- autocomplete ---- */
