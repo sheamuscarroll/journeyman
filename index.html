@@ -7,17 +7,20 @@
 <meta name="description" content="Journeyman: guess NBA players from their career team history, or rebuild a player's career path team by team. Active and all-time modes. How long can your streak go?">
 <style>
 :root{
-  --bg:#0d1117; --bg2:#12181f; --card:#161d26; --card2:#1c2530;
-  --border:#242e3a; --border2:#33404f;
-  --text:#e8edf3; --muted:#8b98a8; --faint:#5c6875;
-  --accent:#ff8a3d; --accent2:#ffb07a; --green:#3ecf8e; --red:#ff5c69;
-  --radius:14px;
+  --bg:#0b0d14; --bg2:#131722; --card:#171c2a; --card2:#1e2434;
+  --border:#272e42; --border2:#39425c;
+  --text:#eef1f7; --muted:#93a0b5; --faint:#5e6a80;
+  --accent:#ff8a3d; --accent2:#ffb07a; --hot:#ff5c8a;
+  --green:#3ecf8e; --red:#ff5c69;
+  --radius:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
   background:
-    radial-gradient(1200px 500px at 50% -10%, rgba(255,138,61,.07), transparent 60%),
+    radial-gradient(1100px 480px at 50% -8%, rgba(255,138,61,.12), transparent 60%),
+    radial-gradient(900px 600px at 110% 30%, rgba(255,92,138,.05), transparent 65%),
+    radial-gradient(800px 600px at -10% 70%, rgba(62,207,142,.04), transparent 65%),
     var(--bg);
   color:var(--text);
   font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -28,12 +31,22 @@ body{
 /* ---------- header ---------- */
 header{text-align:center;padding:26px 0 8px}
 .logo{
-  font-size:2.35rem;font-weight:800;letter-spacing:.06em;
-  background:linear-gradient(100deg,var(--accent) 20%,var(--accent2) 80%);
+  font-size:2.6rem;font-weight:900;letter-spacing:.07em;
+  background:linear-gradient(100deg,var(--accent) 15%,var(--hot) 90%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
   text-transform:uppercase;
 }
-.logo .ball{font-size:1.6rem;vertical-align:.2em}
+.logo .ball{
+  font-size:1.7rem;vertical-align:.2em;display:inline-block;
+  animation:ballBounce 2.4s cubic-bezier(.28,.84,.42,1) infinite;
+}
+@keyframes ballBounce{
+  0%,100%{transform:translateY(0) rotate(0)}
+  45%{transform:translateY(-11px) rotate(18deg)}
+  60%{transform:translateY(0) rotate(24deg)}
+  72%{transform:translateY(-5px) rotate(28deg)}
+  84%{transform:translateY(0) rotate(32deg)}
+}
 .tagline{color:var(--muted);font-size:.95rem;margin-top:2px}
 
 /* ---------- home ---------- */
@@ -50,8 +63,17 @@ header{text-align:center;padding:26px 0 8px}
   padding:18px 18px 15px;cursor:pointer;text-align:left;color:var(--text);
   font-family:inherit;transition:transform .15s,border-color .15s,background .15s;
 }
-.mode-card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--card2)}
-.mode-card h3{font-size:1.05rem;font-weight:700}
+.mode-card{position:relative;overflow:hidden}
+.mode-card::after{
+  content:"Play →";position:absolute;right:14px;bottom:12px;
+  color:var(--accent);font-size:.78rem;font-weight:800;
+  opacity:0;transform:translateX(-6px);transition:.18s;
+}
+.mode-card:hover{transform:translateY(-3px) scale(1.01);border-color:var(--accent);background:var(--card2);
+  box-shadow:0 10px 32px rgba(255,138,61,.13)}
+.mode-card:hover::after{opacity:1;transform:none}
+.mode-card:active{transform:translateY(-1px) scale(.99)}
+.mode-card h3{font-size:1.05rem;font-weight:800}
 .mode-card .sub{color:var(--muted);font-size:.82rem;margin-top:3px}
 .mode-card .best{
   margin-top:12px;font-size:.78rem;color:var(--accent2);font-weight:600;
@@ -83,6 +105,16 @@ header{text-align:center;padding:26px 0 8px}
 .scores{display:flex;gap:14px;font-size:.85rem;font-weight:700}
 .scores .streak{color:var(--accent)}
 .scores .hs{color:var(--muted)}
+#streak{display:inline-block}
+#streak.pop{animation:popNum .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes popNum{0%{transform:scale(1)}45%{transform:scale(1.6)}100%{transform:scale(1)}}
+.confetti{
+  position:fixed;width:9px;height:9px;border-radius:2px;z-index:99;pointer-events:none;
+  transition:transform .9s cubic-bezier(.16,.8,.3,1),opacity .9s ease;
+}
+.team-btn:active{transform:scale(.93)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.roundin{animation:fadeIn .3s ease}
 
 .game-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
@@ -97,9 +129,14 @@ header{text-align:center;padding:26px 0 8px}
 .stints{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:6px}
 .stint{
   display:flex;flex-direction:column;align-items:center;min-width:76px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:11px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
   padding:9px 13px 8px;border-top:3px solid var(--tc,#888);justify-content:center;
+  animation:chipIn .38s cubic-bezier(.2,.9,.3,1.2) both;
+  transition:transform .15s;
 }
+.stint:hover{transform:translateY(-3px) rotate(-1deg)}
+@keyframes chipIn{from{opacity:0;transform:translateY(14px) scale(.8)}to{opacity:1;transform:none}}
+.arrow{animation:chipIn .38s ease both}
 .stint .abbr{font-weight:800;font-size:1.02rem;letter-spacing:.03em}
 .stint .yrs{color:var(--muted);font-size:.74rem;margin-top:1px}
 .arrow{align-self:center;color:var(--faint);font-size:1rem}
@@ -213,7 +250,7 @@ header{text-align:center;padding:26px 0 8px}
       </div>
     </header>
 
-    <div class="section-label"><span>Who Am I?</span></div>
+    <div class="section-label"><span>🕵️ Who Am I?</span></div>
     <div class="mode-desc" id="guessDesc">You get a career's team path — name the player. Stuck? Two hints: position, then the years.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('guess','active')">
@@ -228,7 +265,7 @@ header{text-align:center;padding:26px 0 8px}
       </button>
     </div>
 
-    <div class="section-label"><span>Career Path</span></div>
+    <div class="section-label"><span>🧭 Career Path</span></div>
     <div class="mode-desc">You get the player — rebuild the teams they played for, in order. Team names match the player's era (SEA, not OKC, for Shawn Kemp). Only multi-team careers appear; hard mode adds lesser-known ones.</div>
     <div class="cards">
       <button class="mode-card" onclick="startGame('path','active')">
@@ -456,7 +493,19 @@ function restart(){ startGame(mode, pool); }
 
 /* ================= round flow ================= */
 function nextRound(){
+  /* variety rule: never serve the same number-of-teams twice in a row,
+     unless that number is 4 or more */
+  const prevLen = current ? mergedPath(current).length : 0;
   if (deckPos >= deck.length){ shuffle(deck); deckPos = 0; }
+  if (prevLen && prevLen <= 3 && mergedPath(deck[deckPos]).length === prevLen){
+    let j = -1;
+    for (let k = deckPos + 1; k < deck.length; k++)
+      if (mergedPath(deck[k]).length !== prevLen){ j = k; break; }
+    if (j === -1) // remainder is all the same length — borrow from the used part
+      for (let k = 0; k < deckPos; k++)
+        if (mergedPath(deck[k]).length !== prevLen){ j = k; break; }
+    if (j !== -1) [deck[deckPos], deck[j]] = [deck[j], deck[deckPos]];
+  }
   current = deck[deckPos++];
   answerPath = mergedPath(current);
   roundOver = false;
@@ -469,7 +518,11 @@ function nextRound(){
   $("feedback").className = "feedback";
   $("gameOver").classList.add("hidden");
   $("streak").textContent = streak;
-  $("gameCard").classList.remove("shake");
+  const gc = $("gameCard");
+  gc.classList.remove("shake");
+  gc.classList.remove("roundin");
+  void gc.offsetWidth;
+  gc.classList.add("roundin");
 
   if (mode === "guess"){
     $("guessView").classList.remove("hidden");
@@ -507,11 +560,13 @@ function renderStints(){
     if (i > 0){
       const ar = document.createElement("div");
       ar.className = "arrow"; ar.textContent = "→";
+      ar.style.animationDelay = (i * 80 - 40) + "ms";
       box.appendChild(ar);
     }
     const info = eraInfo(b.code, b.from, b.to);
     const d = document.createElement("div");
     d.className = "stint";
+    d.style.animationDelay = (i * 80) + "ms";
     d.style.setProperty("--tc", info.color);
     d.innerHTML = `<span class="abbr">${info.label}</span>` +
       (yearsShown ? `<span class="yrs">${yrsText(b.from, b.to)}</span>` : "");
@@ -687,10 +742,32 @@ function giveUp(){
 }
 
 /* ================= results ================= */
+function confettiBurst(){
+  const card = $("gameCard");
+  const r = card.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + Math.min(120, r.height / 3);
+  const colors = ["#ff8a3d","#3ecf8e","#ffd166","#6ec6ff","#ff5c8a"];
+  for (let i = 0; i < 26; i++){
+    const p = document.createElement("div");
+    p.className = "confetti";
+    p.style.left = cx + "px"; p.style.top = cy + "px";
+    p.style.background = colors[i % colors.length];
+    document.body.appendChild(p);
+    const ang = Math.random() * Math.PI * 2, v = 70 + Math.random() * 170;
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(${Math.cos(ang) * v}px, ${Math.sin(ang) * v + 130}px) rotate(${Math.random() * 720 - 360}deg)`;
+      p.style.opacity = "0";
+    });
+    setTimeout(() => p.remove(), 950);
+  }
+}
 function correct(guessed){
   roundOver = true;
   streak++;
   $("streak").textContent = streak;
+  const st = $("streak");
+  st.classList.remove("pop"); void st.offsetWidth; st.classList.add("pop");
+  confettiBurst();
   const b = getBest(bestKey());
   if (streak > b){ localStorage.setItem(bestKey(), streak); $("best").textContent = streak; }
   const msg = mode === "guess" ? `✔ ${(guessed || current).n}!` : "✔ Perfect path!";

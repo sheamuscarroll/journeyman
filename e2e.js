@@ -46,6 +46,24 @@ expect("2nd miss -> game over shown", !w.document.getElementById("gameOver").cla
 expect("all-time pool includes LeBron", w.eval(`basePool().some(p => p.n === "LeBron James")`));
 expect("all-time pool includes retired legends", w.eval(`basePool().some(p => p.n === "Michael Jordan")`));
 expect("all-time pool excludes non-great actives", w.eval(`!basePool().some(p => p.n === "Scoot Henderson")`));
+expect("easy all-time pool excludes Chris Webber (hard-only path)", w.eval(`!answerPool().some(p => p.n === "Chris Webber")`));
+expect("easy all-time pool keeps famous paths (Wade)", w.eval(`answerPool().some(p => p.n === "Dwyane Wade")`));
+
+/* ---- variety rule: no back-to-back same team-count unless 4+ ---- */
+expect("no consecutive equal path lengths of 3 or fewer", w.eval(`
+  (() => {
+    startGame('guess','active');
+    let prev = mergedPath(current).length, ok = true;
+    for (let i = 0; i < 60; i++){
+      nextRound();
+      const len = mergedPath(current).length;
+      if (len === prev && len <= 3) ok = false;
+      prev = len;
+    }
+    return ok;
+  })()
+`));
+w.eval(`goHome()`);
 
 /* ---- hard mode ---- */
 w.eval(`goHome()`);
@@ -57,6 +75,8 @@ expect("hard mode flagged in title", w.document.getElementById("modeTitle").text
 expect("hard mode hides years", w.document.querySelectorAll("#stints .yrs").length === 0);
 expect("hard mode hides hint button", w.document.getElementById("hintBtn").classList.contains("hidden"));
 expect("hard pool includes deep cuts", w.eval(`answerPool().some(p => !isKnown(p))`));
+expect("hard all-time pool includes elder journeymen (Sikma)", w.eval(`answerPool().some(p => p.n === "Jack Sikma")`));
+expect("hard all-time pool includes Chris Webber", w.eval(`answerPool().some(p => p.n === "Chris Webber")`));
 expect("hard active pool includes D'Angelo Russell", w.eval(`
   (() => { const keep = pool; pool = 'active';
     const r = answerPool().some(p => p.n === "D'Angelo Russell"); pool = keep; return r; })()

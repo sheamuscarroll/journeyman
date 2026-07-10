@@ -63,7 +63,10 @@ const GREATS = new Set([
 
 /* Players famous enough for the default (easy) Who Am I / Career Path pools.
    All GREATS are automatically included — this list adds everyone else.
-   Players in neither list appear only in hard mode. */
+   Players in neither list appear only in hard mode. Rule of thumb: it's not
+   how famous the PLAYER is, it's how famous their CAREER PATH is — Chris
+   Webber and Moses Malone are legends, but their team histories are hard-mode
+   trivia, so they live there. */
 const WELL_KNOWN = new Set([
   // active
   "Zion Williamson","LaMelo Ball","Victor Wembanyama","Cade Cunningham","Paolo Banchero",
@@ -75,24 +78,19 @@ const WELL_KNOWN = new Set([
   "OG Anunoby","RJ Barrett","Brandon Ingram","Lauri Markkanen","Jaren Jackson Jr.",
   "Cooper Flagg","Jakob Poeltl","Fred VanVleet","Jalen Green","Dillon Brooks",
   "Austin Reaves","Jalen Williams","Franz Wagner","Josh Giddey","Kyle Lowry",
-  // all-time
+  // all-time — famous careers with famous paths
   "Michael Jordan","Kareem Abdul-Jabbar","Magic Johnson","Larry Bird","Wilt Chamberlain",
-  "Bill Russell","Jerry West","Oscar Robertson","Elgin Baylor","John Havlicek",
-  "Walt Frazier","Pete Maravich","Bill Walton","George Gervin","Moses Malone",
-  "Julius Erving","James Worthy","Kevin McHale","Robert Parish","Isiah Thomas",
-  "Dominique Wilkins","Reggie Miller","Chris Mullin","Tim Hardaway","Anfernee Hardaway",
-  "Latrell Sprewell","Stephon Marbury","Larry Johnson","Alonzo Mourning","Dikembe Mutombo",
-  "Grant Hill","Tracy McGrady","Vince Carter","Ray Allen","Paul Pierce",
-  "Dwyane Wade","Chris Bosh","Carmelo Anthony","Dwight Howard","Pau Gasol",
-  "Marc Gasol","Tony Parker","Manu Ginobili","Chauncey Billups","Chris Webber",
-  "Rasheed Wallace","Ben Wallace","Dennis Rodman","Scottie Pippen","Patrick Ewing",
-  "Clyde Drexler","David Robinson","Gary Payton","Shawn Kemp","Charles Barkley",
-  "Karl Malone","John Stockton","Hakeem Olajuwon","Shaquille O'Neal","Tim Duncan",
-  "Kobe Bryant","Dirk Nowitzki","Kevin Garnett","Allen Iverson","Steve Nash",
-  "Jason Kidd","Yao Ming","Amar'e Stoudemire","Deron Williams","Joe Johnson",
-  "Zach Randolph","LaMarcus Aldridge","Derrick Rose","Rajon Rondo","Andre Iguodala",
-  "J.R. Smith","Blake Griffin","DeMarcus Cousins","Kemba Walker","Baron Davis",
-  "Gilbert Arenas","Chris Paul"
+  "Bill Russell","Jerry West","Elgin Baylor","John Havlicek","Julius Erving",
+  "James Worthy","Kevin McHale","Isiah Thomas","Dominique Wilkins","Reggie Miller",
+  "Anfernee Hardaway","Alonzo Mourning","Dikembe Mutombo","Grant Hill","Tracy McGrady",
+  "Vince Carter","Ray Allen","Paul Pierce","Dwyane Wade","Chris Bosh",
+  "Carmelo Anthony","Dwight Howard","Pau Gasol","Marc Gasol","Tony Parker",
+  "Manu Ginobili","Rasheed Wallace","Ben Wallace","Dennis Rodman","Scottie Pippen",
+  "Patrick Ewing","Clyde Drexler","David Robinson","Gary Payton","Shawn Kemp",
+  "Charles Barkley","Karl Malone","John Stockton","Hakeem Olajuwon","Shaquille O'Neal",
+  "Tim Duncan","Kobe Bryant","Dirk Nowitzki","Kevin Garnett","Allen Iverson",
+  "Steve Nash","Jason Kidd","Yao Ming","Derrick Rose","Andre Iguodala",
+  "Blake Griffin","Kemba Walker","Chris Paul"
 ]);
 
 const PLAYERS = [
@@ -204,6 +202,16 @@ const PLAYERS = [
 {n:"Baron Davis",p:"PG",act:0,s:[["CHA",1999,2002],["NOP",2002,2005],["GSW",2005,2008],["LAC",2008,2011],["CLE",2011,2011],["NYK",2011,2012]]},
 {n:"Gilbert Arenas",p:"PG",act:0,s:[["GSW",2001,2003],["WAS",2003,2010],["ORL",2010,2011],["MEM",2011,2012]]},
 {n:"Steve Francis",p:"PG",act:0,s:[["HOU",1999,2004],["ORL",2004,2006],["NYK",2006,2007],["HOU",2007,2008]]},
+{n:"Jack Sikma",p:"C",act:0,s:[["OKC",1977,1986],["MIL",1986,1991]]},
+{n:"Sidney Moncrief",p:"SG",act:0,s:[["MIL",1979,1989],["ATL",1990,1991]]},
+{n:"Mark Aguirre",p:"SF",act:0,s:[["DAL",1981,1989],["DET",1989,1993],["LAC",1993,1994]]},
+{n:"Rolando Blackman",p:"SG",act:0,s:[["DAL",1981,1992],["NYK",1992,1994]]},
+{n:"Kiki Vandeweghe",p:"SF",act:0,s:[["DEN",1980,1984],["POR",1984,1989],["NYK",1989,1992],["LAC",1992,1993]]},
+{n:"Tom Chambers",p:"PF",act:0,s:[["LAC",1981,1983],["OKC",1983,1988],["PHX",1988,1993],["UTA",1993,1995],["CHA",1996,1997],["PHI",1997,1998]]},
+{n:"Xavier McDaniel",p:"SF",act:0,s:[["OKC",1985,1991],["PHX",1991,1991],["NYK",1991,1992],["BOS",1992,1995],["BKN",1996,1998]]},
+{n:"World B. Free",p:"SG",act:0,s:[["PHI",1975,1978],["LAC",1978,1980],["GSW",1980,1982],["CLE",1982,1986],["PHI",1986,1987],["HOU",1987,1988]]},
+{n:"Detlef Schrempf",p:"PF",act:0,s:[["DAL",1985,1989],["IND",1989,1993],["OKC",1993,1999],["POR",1999,2001]]},
+{n:"Dan Majerle",p:"SG",act:0,s:[["PHX",1988,1995],["CLE",1995,1996],["MIA",1996,2001],["PHX",2001,2002]]},
 {n:"Chris Paul",p:"PG",act:0,s:[["NOP",2005,2011],["LAC",2011,2017],["HOU",2017,2019],["OKC",2019,2020],["PHX",2020,2023],["GSW",2023,2024],["SAS",2024,2025],["LAC",2025,2026]]},
 
 /* ==================== ACTIVE ==================== */

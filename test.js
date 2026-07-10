@@ -63,7 +63,9 @@ const CURRENT = {
   "Kawhi Leonard":"LAC", "Brandon Ingram":"TOR",
   "Deandre Ayton":"LAL", "Kyle Lowry":"PHI",
   // v4 additions
-  "D'Angelo Russell":"MEM", "DeAndre Jordan":"NOP", "Jonas Valanciunas":"DEN"
+  "D'Angelo Russell":"MEM", "DeAndre Jordan":"NOP", "Jonas Valanciunas":"DEN",
+  // v5 elder additions (era labels derive automatically: Sikma shows SEA, etc.)
+  "Jack Sikma":"MIL", "Detlef Schrempf":"POR", "Dan Majerle":"PHX"
 };
 for (const [n, t] of Object.entries(CURRENT)) {
   if (cur(n) !== t) errs.push(`${n} should end on ${t}, got ${cur(n)}`);

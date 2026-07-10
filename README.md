@@ -8,7 +8,7 @@ A streak-based NBA trivia game about career team histories. Live in your browser
 
 **Who Am I?** — You see a player's career team path (no years). Name the player. You get one second chance per player, and two hints: hint 1 reveals the position, hint 2 reveals the years on each team block (a miss unlocks the next hint automatically). If two players share an identical career path, naming either one counts. A **Give up** button ends the round instantly. Single-franchise careers (Curry, Dirk…) never appear as puzzles — every answer has moved teams at least once.
 
-**Hard mode** (toggle at the top) — The pool expands beyond famous names to journeymen and role players whose career paths few people know, and there are **no hints**. Careers that would be ambiguous without years (e.g. a lone Lakers block that could be Kobe *or* Magic) are removed. Hard-mode best streaks are tracked separately. In easy mode, only well-known players appear.
+**Hard mode** (toggle at the top) — The pool expands beyond famous names to journeymen, role players, and older-era legends whose career paths few people know (Chris Webber, Moses Malone, Jack Sikma…), and there are **no hints**. Careers that would be ambiguous without years (e.g. a lone Lakers block that could be Kobe *or* Magic) are removed. Hard-mode best streaks are tracked separately. In easy mode, only well-known players appear.
 
 **Career Path** — You get a player's name. Rebuild the exact sequence of teams they played for, in order — tap teams to fill slots in order, or **drag any team onto any slot** to fill it directly (drop on a filled slot to replace it, tap to clear). One wrong path ends the run, and the loss screen shows your picks next to the correct path with per-slot right/wrong highlighting. Well-known players in easy mode; everyone in hard. The team picker is **era-accurate**: for Shawn Kemp you'll see SEA (not OKC), and franchises that didn't exist yet during a player's career don't appear at all.
 
@@ -17,7 +17,7 @@ Both modes come in two flavors:
 - **Active** — current NBA players
 - **All-Time** — legends from every era, *including* today's active greats (LeBron, Curry, Giannis…), with era-accurate franchises like the Sonics, Bullets, and New Jersey Nets
 
-Score = your streak. Best streaks are saved locally per mode (hard mode separately).
+Score = your streak. Best streaks are saved locally per mode (hard mode separately). For variety, you'll never get two puzzles in a row with the same number of teams (unless it's 4+).
 
 ## Tech
 
