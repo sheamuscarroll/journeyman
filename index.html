@@ -112,6 +112,22 @@ header{text-align:center;padding:26px 0 8px}
 .hint-btn:hover{color:var(--muted)}
 .hint-text{color:var(--accent2);font-size:.86rem;font-weight:600}
 .tries{color:var(--faint);font-size:.78rem;text-align:center;margin-top:8px}
+.giveup-row{text-align:center;margin-top:12px}
+.giveup-btn{
+  background:none;border:none;color:var(--faint);cursor:pointer;font-family:inherit;
+  font-size:.8rem;text-decoration:underline dotted;text-underline-offset:3px;
+}
+.giveup-btn:hover{color:var(--red)}
+.slot.dragover{border-color:var(--accent);background:rgba(255,138,61,.1)}
+.cmp-label{color:var(--faint);font-size:.72rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;margin:12px 0 6px}
+.cmp-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.cmp-chip{
+  min-width:52px;padding:6px 9px;border-radius:8px;background:var(--bg2);
+  border:1px solid var(--border);font-weight:800;font-size:.82rem;
+}
+.cmp-chip.ok{border-color:var(--green);color:var(--green)}
+.cmp-chip.bad{border-color:var(--red);color:var(--red)}
+.cmp-chip.blank{color:var(--faint);border-style:dashed}
 
 /* guess input */
 .guess-area{position:relative;margin-top:18px}
@@ -256,6 +272,7 @@ header{text-align:center;padding:26px 0 8px}
           <div class="suggestions hidden" id="sugBox"></div>
         </div>
         <div class="tries" id="tries"></div>
+        <div class="giveup-row"><button class="giveup-btn" onclick="giveUp()">Give up</button></div>
       </div>
 
       <!-- CAREER PATH -->
@@ -264,9 +281,10 @@ header{text-align:center;padding:26px 0 8px}
         <div class="player-name" id="pathName"></div>
         <div class="player-meta" id="pathMeta"></div>
         <div class="slots" id="slots"></div>
-        <div class="picker-label" id="pickerLabel">Tap teams in order · tap a filled slot to remove it</div>
+        <div class="picker-label" id="pickerLabel">Tap teams in order, or drag a team onto any slot · tap a filled slot to clear it</div>
         <div class="team-grid" id="teamGrid"></div>
         <div class="path-actions">
+          <button class="btn btn-ghost" onclick="giveUp()">Give Up</button>
           <button class="btn btn-ghost" onclick="undoPick()">Undo</button>
           <button class="btn btn-primary" id="submitPath" onclick="submitPath()" disabled>Submit</button>
         </div>
@@ -278,6 +296,7 @@ header{text-align:center;padding:26px 0 8px}
         <div class="reveal">
           <div class="who" id="revealName"></div>
           <div class="path" id="revealPath"></div>
+          <div id="pathCompare" class="hidden"></div>
         </div>
         <div class="gameover-stats">
           <div><div class="num" id="finalStreak">0</div><div class="lbl">Streak</div></div>
@@ -374,9 +393,8 @@ function isKnown(p){ return WELL_KNOWN.has(p.n) || GREATS.has(p.n); }
 function answerPool(){
   let ps = basePool();
   if (!hardMode) ps = ps.filter(isKnown);                 // easy: famous careers only
-  if (mode === 'path'){
-    ps = ps.filter(p => mergedPath(p).length >= 2);       // multi-team careers only
-  } else if (hardMode){
+  ps = ps.filter(p => mergedPath(p).length >= 2);         // one-team careers never appear
+  if (mode === 'guess' && hardMode){
     const counts = {};
     ps.forEach(p => { const k = sigHard(p); counts[k] = (counts[k] || 0) + 1; });
     ps = ps.filter(p => counts[sigHard(p)] === 1);        // no hints exist, so no ambiguous careers
@@ -468,6 +486,7 @@ function nextRound(){
   } else {
     $("pathView").classList.remove("hidden");
     $("guessView").classList.add("hidden");
+    picks = Array(answerPath.length).fill(null);
     $("pathName").textContent = current.n;
     $("pathMeta").textContent = `${posName(current.p)} · ${careerSpan(current)} · ${answerPath.length} teams`;
     renderTeamGrid();
@@ -603,46 +622,68 @@ function renderTeamGrid(){
     const b = document.createElement("button");
     b.className = "team-btn";
     b.textContent = t.label;
-    b.title = TEAMS[t.code].name;
+    b.title = TEAMS[t.code].name + " — click, or drag onto a slot";
     b.style.setProperty("--tc", t.color);
+    b.draggable = true;
+    b.addEventListener("dragstart", e => e.dataTransfer.setData("text/plain", t.code));
     b.onclick = () => pickTeam(t.code);
     grid.appendChild(b);
   });
+}
+function slotEraLabel(code){
+  return eraInfo(code, current.s[0][1], careerEnd(current));
 }
 function renderSlots(){
   const box = $("slots");
   box.innerHTML = "";
   for (let i = 0; i < answerPath.length; i++){
     const d = document.createElement("div");
-    if (i < picks.length){
-      const info = eraInfo(picks[i], current.s[0][1], careerEnd(current));
+    if (picks[i]){
+      const info = slotEraLabel(picks[i]);
       d.className = "slot filled";
       d.style.setProperty("--tc", info.color);
       d.textContent = info.label;
-      d.title = "Remove";
-      d.onclick = () => { if (!roundOver){ picks.splice(i, 1); renderSlots(); } };
+      d.title = "Clear this slot";
+      d.onclick = () => { if (!roundOver){ picks[i] = null; renderSlots(); } };
     } else {
       d.className = "slot";
       d.innerHTML = `<span class="slot-num">${i + 1}</span>`;
     }
+    /* any slot accepts a dragged team (drop replaces its contents) */
+    d.addEventListener("dragover", e => { e.preventDefault(); d.classList.add("dragover"); });
+    d.addEventListener("dragleave", () => d.classList.remove("dragover"));
+    d.addEventListener("drop", e => {
+      e.preventDefault();
+      const code = e.dataTransfer.getData("text/plain");
+      if (code && TEAMS[code]) fillSlot(i, code);
+    });
     box.appendChild(d);
   }
-  $("submitPath").disabled = picks.length !== answerPath.length || roundOver;
+  $("submitPath").disabled = picks.filter(Boolean).length !== answerPath.length || roundOver;
+}
+function fillSlot(i, code){
+  if (roundOver || i < 0 || i >= answerPath.length) return;
+  picks[i] = code;
+  renderSlots();
 }
 function pickTeam(c){
-  if (roundOver || picks.length >= answerPath.length) return;
-  picks.push(c);
-  renderSlots();
+  if (roundOver) return;
+  const i = picks.indexOf(null);
+  if (i !== -1) fillSlot(i, c);
 }
 function undoPick(){
-  if (roundOver || !picks.length) return;
-  picks.pop();
-  renderSlots();
+  if (roundOver) return;
+  for (let i = picks.length - 1; i >= 0; i--){
+    if (picks[i]){ picks[i] = null; renderSlots(); return; }
+  }
 }
 function submitPath(){
   if (roundOver) return;
-  const ok = picks.length === answerPath.length && picks.every((c, i) => c === answerPath[i]);
+  const ok = picks.every(Boolean) && picks.every((c, i) => c === answerPath[i]);
   if (ok) correct(); else gameOver();
+}
+function giveUp(){
+  if (!roundOver) gameOver();
 }
 
 /* ================= results ================= */
@@ -652,12 +693,11 @@ function correct(guessed){
   $("streak").textContent = streak;
   const b = getBest(bestKey());
   if (streak > b){ localStorage.setItem(bestKey(), streak); $("best").textContent = streak; }
-  let msg = mode === "guess" ? `✔ ${current.n}!` : "✔ Perfect path!";
-  if (guessed && guessed.n !== current.n) msg = `✔ Identical career path — it was ${current.n}, but ${guessed.n} counts!`;
+  const msg = mode === "guess" ? `✔ ${(guessed || current).n}!` : "✔ Perfect path!";
   $("feedback").textContent = msg;
   $("feedback").className = "feedback good";
   if (mode === "guess") $("guessInput").disabled = true;
-  setTimeout(nextRound, guessed && guessed.n !== current.n ? 1800 : 900);
+  setTimeout(nextRound, 900);
 }
 
 function pathString(p){
@@ -678,6 +718,21 @@ function gameOver(){
   $("pathView").classList.add("hidden");
   $("revealName").textContent = current.n;
   $("revealPath").innerHTML = pathString(current);
+  const cmp = $("pathCompare");
+  if (mode === "path" && picks.some(Boolean)){
+    const yours = picks.map((c, i) => {
+      if (!c) return '<span class="cmp-chip blank">—</span>';
+      const cls = c === answerPath[i] ? "ok" : "bad";
+      return `<span class="cmp-chip ${cls}">${slotEraLabel(c).label}</span>`;
+    }).join("");
+    const right = answerPath.map(c => `<span class="cmp-chip ok">${slotEraLabel(c).label}</span>`).join("");
+    cmp.innerHTML = `<div class="cmp-label">Your path</div><div class="cmp-row">${yours}</div>
+                     <div class="cmp-label">Correct path</div><div class="cmp-row">${right}</div>`;
+    cmp.classList.remove("hidden");
+  } else {
+    cmp.classList.add("hidden");
+    cmp.innerHTML = "";
+  }
   const b = getBest(bestKey());
   const isNew = streak > b;
   if (isNew) localStorage.setItem(bestKey(), streak);

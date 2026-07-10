@@ -21,6 +21,7 @@ w.eval(`startGame('guess','active')`);
 expect("game visible after start", !w.document.getElementById("game").classList.contains("hidden"));
 expect("years hidden by default", w.document.querySelectorAll("#stints .yrs").length === 0);
 expect("easy pool = well-known players only", w.eval(`answerPool().every(p => isKnown(p))`));
+expect("guess pool has no one-team careers", w.eval(`answerPool().every(p => mergedPath(p).length >= 2)`));
 w.eval(`submitGuess(current.n)`);
 expect("correct guess -> streak 1", w.document.getElementById("streak").textContent === "1");
 
@@ -56,6 +57,11 @@ expect("hard mode flagged in title", w.document.getElementById("modeTitle").text
 expect("hard mode hides years", w.document.querySelectorAll("#stints .yrs").length === 0);
 expect("hard mode hides hint button", w.document.getElementById("hintBtn").classList.contains("hidden"));
 expect("hard pool includes deep cuts", w.eval(`answerPool().some(p => !isKnown(p))`));
+expect("hard active pool includes D'Angelo Russell", w.eval(`
+  (() => { const keep = pool; pool = 'active';
+    const r = answerPool().some(p => p.n === "D'Angelo Russell"); pool = keep; return r; })()
+`));
+expect("hard guess pool has no one-team careers", w.eval(`answerPool().every(p => mergedPath(p).length >= 2)`));
 expect("hard pool has no ambiguous careers", w.eval(`
   (() => { const ps = answerPool(); const c = {};
     ps.forEach(p => { const k = sigHard(p); c[k] = (c[k]||0)+1; });
@@ -77,7 +83,14 @@ w.eval(`
   submitGuess("Test Twin B");
 `);
 expect("identical career path counts as correct", w.document.getElementById("streak").textContent === "1");
+expect("identical path shows plain correct message",
+  w.document.getElementById("feedback").textContent.includes("Test Twin B") &&
+  !w.document.getElementById("feedback").textContent.includes("counts"));
 w.eval(`PLAYERS.pop(); PLAYERS.pop();`);
+
+/* ---- give up ---- */
+w.eval(`startGame('guess','active'); giveUp();`);
+expect("give up ends the round instantly", !w.document.getElementById("gameOver").classList.contains("hidden"));
 
 /* ---- era-accurate labels ---- */
 expect("KD's OKC block labels SEA/OKC", w.eval(`eraInfo("OKC",2007,2016).label`) === "SEA/OKC");
@@ -90,14 +103,14 @@ expect("Westbrook's OKC block labels OKC", w.eval(`eraInfo("OKC",2008,2019).labe
 w.eval(`
   startGame('path','alltime');
   current = PLAYERS.find(p => p.n === "Shawn Kemp");
-  answerPath = mergedPath(current); picks = [];
+  answerPath = mergedPath(current); picks = Array(answerPath.length).fill(null);
   renderTeamGrid(); renderSlots();
 `);
 let labels = [...w.document.querySelectorAll("#teamGrid .team-btn")].map(b => b.textContent);
 expect("Kemp grid shows SEA not OKC", labels.includes("SEA") && !labels.includes("OKC"));
 w.eval(`
   current = PLAYERS.find(p => p.n === "Wilt Chamberlain");
-  answerPath = mergedPath(current); picks = [];
+  answerPath = mergedPath(current); picks = Array(answerPath.length).fill(null);
   renderTeamGrid(); renderSlots();
 `);
 labels = [...w.document.querySelectorAll("#teamGrid .team-btn")].map(b => b.textContent);
@@ -107,16 +120,34 @@ expect("Wilt grid shows era Warriors label", labels.some(l => l.includes("PHW"))
 
 /* ---- Career Path: correct + wrong submissions ---- */
 w.eval(`
+  picks = Array(answerPath.length).fill(null);
   answerPath.forEach(c => pickTeam(c)); submitPath();
 `);
 expect("correct path -> streak 1", w.document.getElementById("streak").textContent === "1");
+
+/* ---- drag-to-slot: fill an arbitrary slot directly ---- */
+w.eval(`
+  nextRound();
+  fillSlot(answerPath.length - 1, answerPath[answerPath.length - 1]);
+`);
+expect("fillSlot fills a non-sequential slot", w.eval(`picks[answerPath.length - 1] === answerPath[answerPath.length - 1] && picks[0] === null`));
+expect("submit stays disabled until all slots filled", w.document.getElementById("submitPath").disabled);
+w.eval(`
+  answerPath.forEach((c, i) => fillSlot(i, c)); submitPath();
+`);
+expect("drag-filled correct path -> streak up", w.document.getElementById("streak").textContent === "2");
+
+/* ---- wrong path -> game over + comparison ---- */
 w.eval(`
   nextRound();
   const wrong = answerPath.slice().reverse();
   if (wrong.length === 1) wrong[0] = wrong[0] === "BOS" ? "LAL" : "BOS";
-  picks = []; wrong.forEach(c => pickTeam(c)); submitPath();
+  wrong.forEach((c, i) => fillSlot(i, c)); submitPath();
 `);
 expect("wrong path -> game over", !w.document.getElementById("gameOver").classList.contains("hidden"));
+expect("loss shows your-path vs correct-path comparison",
+  !w.document.getElementById("pathCompare").classList.contains("hidden") &&
+  w.document.querySelectorAll("#pathCompare .cmp-row").length === 2);
 
 /* ---- Career Path pool: multi-team careers only, fame split ---- */
 expect("path pool has no single-team players", w.eval(`

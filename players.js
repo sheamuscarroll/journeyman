@@ -15,7 +15,7 @@
    To update after trades: edit the stints, bump DATA_UPDATED, run npm test.
    ============================================================ */
 
-const DATA_UPDATED = "July 9, 2026";
+const DATA_UPDATED = "July 10, 2026";
 
 const TEAMS = {
   ATL:{name:"Atlanta Hawks",c:"#E03A3E",f:1949},
@@ -309,6 +309,7 @@ const PLAYERS = [
 {n:"Aaron Gordon",p:"PF",act:1,s:[["ORL",2014,2021],["DEN",2021,0]]},
 {n:"Cam Johnson",p:"SF",act:1,s:[["PHX",2019,2023],["BKN",2023,2025],["DEN",2025,0]]},
 {n:"Christian Braun",p:"SG",act:1,s:[["DEN",2022,0]]},
+{n:"Jonas Valanciunas",p:"C",act:1,s:[["TOR",2012,2019],["MEM",2019,2021],["NOP",2021,2024],["WAS",2024,2025],["SAC",2025,2025],["DEN",2025,0]]},
 {n:"Michael Porter Jr.",p:"SF",act:1,s:[["DEN",2018,2025],["BKN",2025,0]]},
 {n:"Cam Thomas",p:"SG",act:1,s:[["BKN",2021,0]]},
 {n:"Nic Claxton",p:"C",act:1,s:[["BKN",2019,2026],["CHI",2026,0]]},
@@ -330,6 +331,7 @@ const PLAYERS = [
 {n:"Kelly Oubre Jr.",p:"SF",act:1,s:[["WAS",2015,2019],["PHX",2019,2020],["GSW",2020,2021],["CHA",2021,2023],["PHI",2023,2026],["IND",2026,0]]},
 {n:"Kyle Lowry",p:"PG",act:1,s:[["MEM",2006,2009],["HOU",2009,2012],["TOR",2012,2021],["MIA",2021,2024],["PHI",2024,0]]},
 {n:"Trey Murphy III",p:"SF",act:1,s:[["NOP",2021,0]]},
+{n:"DeAndre Jordan",p:"C",act:1,s:[["LAC",2008,2018],["DAL",2018,2019],["NYK",2019,2019],["BKN",2019,2021],["LAL",2021,2022],["PHI",2022,2022],["DEN",2022,2025],["NOP",2025,0]]},
 {n:"Herbert Jones",p:"SF",act:1,s:[["NOP",2021,0]]},
 {n:"Dejounte Murray",p:"PG",act:1,s:[["SAS",2016,2022],["ATL",2022,2024],["NOP",2024,0]]},
 {n:"Jordan Poole",p:"SG",act:1,s:[["GSW",2019,2023],["WAS",2023,2025],["NOP",2025,0]]},
@@ -346,6 +348,7 @@ const PLAYERS = [
 {n:"Jaren Jackson Jr.",p:"PF",act:1,s:[["MEM",2018,2026],["UTA",2026,0]]},
 {n:"Walker Kessler",p:"C",act:1,s:[["UTA",2022,2026],["LAL",2026,0]]},
 {n:"Zach Edey",p:"C",act:1,s:[["MEM",2024,0]]},
+{n:"D'Angelo Russell",p:"PG",act:1,s:[["LAL",2015,2017],["BKN",2017,2019],["GSW",2019,2020],["MIN",2020,2023],["LAL",2023,2025],["BKN",2025,2025],["WAS",2025,2026],["MEM",2026,0]]},
 {n:"Kentavious Caldwell-Pope",p:"SG",act:1,s:[["DET",2013,2017],["LAL",2017,2021],["WAS",2021,2023],["DEN",2023,2024],["ORL",2024,2025],["MEM",2025,0]]},
 {n:"Austin Reaves",p:"SG",act:1,s:[["LAL",2021,0]]},
 {n:"Rui Hachimura",p:"PF",act:1,s:[["WAS",2019,2023],["LAL",2023,2026],["LAC",2026,0]]},

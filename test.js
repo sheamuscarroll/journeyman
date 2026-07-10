@@ -61,7 +61,9 @@ const CURRENT = {
   // unverified/pending moves must stay put:
   // Kawhi trade to TOR on hold (NBA "Aspiration" investigation) — both sides unchanged
   "Kawhi Leonard":"LAC", "Brandon Ingram":"TOR",
-  "Deandre Ayton":"LAL", "Kyle Lowry":"PHI"
+  "Deandre Ayton":"LAL", "Kyle Lowry":"PHI",
+  // v4 additions
+  "D'Angelo Russell":"MEM", "DeAndre Jordan":"NOP", "Jonas Valanciunas":"DEN"
 };
 for (const [n, t] of Object.entries(CURRENT)) {
   if (cur(n) !== t) errs.push(`${n} should end on ${t}, got ${cur(n)}`);
