@@ -496,14 +496,20 @@ function nextRound(){
   /* variety rule: never serve the same number-of-teams twice in a row,
      unless that number is 4 or more */
   const prevLen = current ? mergedPath(current).length : 0;
+  const prevPlayer = current;
   if (deckPos >= deck.length){ shuffle(deck); deckPos = 0; }
+  /* never the same player twice in a row (possible right after a reshuffle) */
+  if (deck.length > 1 && deck[deckPos] === prevPlayer){
+    const j = deckPos + 1 < deck.length ? deckPos + 1 : deckPos - 1;
+    [deck[deckPos], deck[j]] = [deck[j], deck[deckPos]];
+  }
   if (prevLen && prevLen <= 3 && mergedPath(deck[deckPos]).length === prevLen){
     let j = -1;
     for (let k = deckPos + 1; k < deck.length; k++)
-      if (mergedPath(deck[k]).length !== prevLen){ j = k; break; }
+      if (deck[k] !== prevPlayer && mergedPath(deck[k]).length !== prevLen){ j = k; break; }
     if (j === -1) // remainder is all the same length — borrow from the used part
       for (let k = 0; k < deckPos; k++)
-        if (mergedPath(deck[k]).length !== prevLen){ j = k; break; }
+        if (deck[k] !== prevPlayer && mergedPath(deck[k]).length !== prevLen){ j = k; break; }
     if (j !== -1) [deck[deckPos], deck[j]] = [deck[j], deck[deckPos]];
   }
   current = deck[deckPos++];

@@ -50,6 +50,18 @@ expect("easy all-time pool excludes Chris Webber (hard-only path)", w.eval(`!ans
 expect("easy all-time pool keeps famous paths (Wade)", w.eval(`answerPool().some(p => p.n === "Dwyane Wade")`));
 
 /* ---- variety rule: no back-to-back same team-count unless 4+ ---- */
+expect("never the same player twice in a row (over full reshuffles)", w.eval(`
+  (() => {
+    startGame('guess','active');
+    let prev = current.n, ok = true;
+    for (let i = 0; i < 120; i++){
+      nextRound();
+      if (current.n === prev) ok = false;
+      prev = current.n;
+    }
+    return ok;
+  })()
+`));
 expect("no consecutive equal path lengths of 3 or fewer", w.eval(`
   (() => {
     startGame('guess','active');
